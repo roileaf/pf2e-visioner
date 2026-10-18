@@ -1,5 +1,11 @@
 # Changelog
 
+## [8.14.3] - 2026-10-18
+
+### Fixed
+
+- Door and corner peeking no longer stutters. Starting a peek used to flip every creature outside the slit from observed to hidden, which created a Hidden effect on each of their actors and deleted them all again when the peek ended. Now a peek only adds sight: creatures the peeker already saw (observed or concealed) stay that way and are drawn normally outside the slit, while creatures it couldn't see can still be revealed through the slit.
+
 ## [8.14.2] - 2026-10-17
 
 ### Changed
