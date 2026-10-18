@@ -927,12 +927,12 @@ export function registerKeybindings() {
         break;
       case 'toggleObserverMode':
         keybindingConfig.onDown = async () => {
-          const { setTooltipMode } = await import('./services/HoverTooltips.js');
-          setTooltipMode('observer');
+          const { startObserverKeyOverlay } = await import('./services/HoverTooltips.js');
+          startObserverKeyOverlay();
         };
         keybindingConfig.onUp = async () => {
-          const { setTooltipMode } = await import('./services/HoverTooltips.js');
-          setTooltipMode('target');
+          const { endObserverKeyOverlay } = await import('./services/HoverTooltips.js');
+          endObserverKeyOverlay();
         };
         break;
       case 'showAutoCoverOverlay':

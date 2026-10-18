@@ -42,6 +42,7 @@ import {
   createVisibilityFactorBadge,
   createVisibilityFactorTooltip,
   createVisibilityTooltipBadge,
+  getTooltipBadgeLayer,
   resolveTooltipCssColor,
 } from './HoverTooltip/hover-tooltip-badge-elements.js';
 import { getTooltipCoverBadgeColor } from './HoverTooltip/hover-tooltip-cover-badge.js';
@@ -331,8 +332,10 @@ function stopBadgeTicker() {
   } catch (_) { }
 
   HoverTooltips.badgeTicker = null;
+}
+
+function invalidateCanvasRectCache() {
   delete HoverTooltips._canvasRectCache;
-  HoverTooltips._canvasRectInvalidated = true;
 }
 
 function hasPositionedTooltipBadges() {
@@ -515,6 +518,8 @@ export function initializeHoverTooltips() {
   // Add event listeners to tokens (for drag detection only)
   addTokenEventListeners();
   installCanvasPointerGuard();
+  window.removeEventListener('resize', invalidateCanvasRectCache);
+  window.addEventListener('resize', invalidateCanvasRectCache);
 
   // Register hoverToken hook to handle token hover events
   // This is cleaner than PIXI events and automatically excludes UI hover
@@ -1063,6 +1068,16 @@ export function showControlledTokenVisibilityObserver() {
   });
 }
 
+export function startObserverKeyOverlay() {
+  HoverTooltips.tooltipMode = 'observer';
+  showControlledTokenVisibilityObserver();
+}
+
+export function endObserverKeyOverlay() {
+  HoverTooltips.tooltipMode = 'target';
+  onHighlightObjects(false);
+}
+
 function getObserverKeyboardOverlayTokens() {
   const controlledTokens = canvas.tokens.controlled;
   if (controlledTokens.length > 0) return controlledTokens;
@@ -1220,7 +1235,7 @@ function addVisibilityIndicator(
       borderRadius,
     });
     setTooltipBadgeTransform(el, leftPx, topPx, scale);
-    document.body.appendChild(el);
+    getTooltipBadgeLayer().appendChild(el);
     return el;
   };
 
@@ -1235,7 +1250,7 @@ function addVisibilityIndicator(
       iconPx: sizeConfig.iconPx,
     });
     setTooltipBadgeTransform(el, leftPx, topPx, scale);
-    document.body.appendChild(el);
+    getTooltipBadgeLayer().appendChild(el);
     return el;
   };
 
@@ -1323,9 +1338,6 @@ function addVisibilityIndicator(
 function ensureBadgeTicker() {
   if (HoverTooltips.badgeTicker) return;
 
-  // Invalidate canvas rect cache when ticker starts (viewport may have changed)
-  HoverTooltips._canvasRectInvalidated = true;
-
   // Track canvas transform to detect when movement stops
   let lastTransform = null;
   let framesStatic = 0;
@@ -1368,7 +1380,6 @@ function ensureBadgeTicker() {
       } else {
         framesStatic = 0;
         lastTransform = currentTransform;
-        HoverTooltips._canvasRectInvalidated = true; // Viewport changed
       }
 
       updateBadgePositions();
@@ -1424,9 +1435,8 @@ function computeIndicatorBadgeFrame(
 
 function getCachedCanvasRect() {
   // Cache getBoundingClientRect to avoid layout thrashing (expensive DOM query)
-  if (!HoverTooltips._canvasRectCache || HoverTooltips._canvasRectInvalidated) {
+  if (!HoverTooltips._canvasRectCache) {
     HoverTooltips._canvasRectCache = canvas.app.view.getBoundingClientRect();
-    HoverTooltips._canvasRectInvalidated = false;
   }
   return HoverTooltips._canvasRectCache;
 }
@@ -1588,7 +1598,7 @@ function addCoverIndicator(targetToken, observerToken, coverState, isManualCover
     isManualCover,
   });
   setTooltipBadgeTransform(el, left, top, frame.scale);
-  document.body.appendChild(el);
+  getTooltipBadgeLayer().appendChild(el);
   indicator._coverBadgeEl = el;
 
   addBadgeClickHandler(el, observerToken, targetToken, 'target');

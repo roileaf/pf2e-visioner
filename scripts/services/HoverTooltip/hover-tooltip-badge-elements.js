@@ -44,6 +44,22 @@ function createPositionedTooltipBadgeContainer({ left, top, tooltipLabel = '' })
   return el;
 }
 
+const TOOLTIP_BADGE_LAYER_ID = 'pf2e-visioner-tooltip-badge-layer';
+
+export function getTooltipBadgeLayer() {
+  let layer = document.getElementById(TOOLTIP_BADGE_LAYER_ID);
+  if (layer?.isConnected) return layer;
+  layer = document.createElement('div');
+  layer.id = TOOLTIP_BADGE_LAYER_ID;
+  layer.style.position = 'fixed';
+  layer.style.inset = '0';
+  layer.style.pointerEvents = 'none';
+  layer.style.contain = 'strict';
+  layer.style.zIndex = '15';
+  document.body.appendChild(layer);
+  return layer;
+}
+
 export function getTooltipSenseIcon(sense) {
   return TOOLTIP_SENSE_ICONS[sense] || 'fa-solid fa-eye';
 }

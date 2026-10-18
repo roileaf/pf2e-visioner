@@ -1070,44 +1070,6 @@ export async function onCanvasReady() {
     }
   });
 
-  // Always bind keyboard shortcuts (Alt handled via highlightObjects hook, O key handled here)
-  // Bind 'O' key on keydown/keyup for observer overlay
-  bindWindowListenerOnce(
-    'lifecycleObserverKeydown',
-    'keydown',
-    async (ev) => {
-      if (ev.key?.toLowerCase() !== 'o') return;
-      const { HoverTooltips, showControlledTokenVisibilityObserver } = await import(
-        '../services/HoverTooltips.js'
-      );
-      if (
-        !HoverTooltips.isShowingKeyTooltips &&
-        typeof showControlledTokenVisibilityObserver === 'function'
-      ) {
-        showControlledTokenVisibilityObserver();
-      } else {
-      }
-    },
-    { passive: true },
-  );
-  bindWindowListenerOnce(
-    'lifecycleObserverKeyup',
-    'keyup',
-    async (ev) => {
-      if (ev.key?.toLowerCase() !== 'o') return;
-      try {
-        // Reuse the existing release path via onHighlightObjects(false)
-        const { onHighlightObjects } = await import('../services/HoverTooltips.js');
-        onHighlightObjects(false);
-        // Note: Don't call cleanupHoverTooltips() here as it would reset currentHoveredToken
-        // and prevent hover tooltips from being restored
-      } catch (err) {
-        console.error(`[${MODULE_ID}] O key release error:`, err);
-      }
-    },
-    { passive: true },
-  );
-
   // After canvas is ready, previously rendered chat messages may have been processed
   // before tokens were available, preventing action panels (e.g., Consequences) from
   // being injected. Reprocess existing messages once so GM sees buttons on login.
