@@ -4,6 +4,7 @@ import { wrapCanvasVisibilityTest } from '../../../scripts/services/Detection/de
 import { createCanDetectVisibilityWrapper } from '../../../scripts/services/Detection/detection-can-detect.js';
 import { testDetectionModeVisibility } from '../../../scripts/services/Detection/detection-mode-visibility.js';
 import { peekRegistry } from '../../../scripts/services/Peek/PeekRegistry.js';
+import { clearPeekVisibilityFloors } from '../../../scripts/services/Peek/peek-visibility-floor.js';
 import { clearSettingValueCache } from '../../../scripts/utils/setting-value-cache.js';
 import { legacyVisibilityToProfile } from '../../../scripts/visibility/perception-profile.js';
 
@@ -28,6 +29,7 @@ describe('canvas visibility wrapper', () => {
   });
 
   afterEach(() => {
+    clearPeekVisibilityFloors();
     clearSettingValueCache();
     global.game.settings.set('pf2e', 'gmVision', false);
     global.game.settings.set('pf2e-visioner', 'autoVisibilityEnabled', false);
@@ -309,6 +311,80 @@ describe('canvas visibility wrapper', () => {
 
     expect(wrapCanvasVisibilityTest(wrapped, [{ x: 250, y: 0 }], { object: target })).toBe(true);
     expect(wrapped).toHaveBeenCalledTimes(1);
+  });
+
+  test('active peek keeps creatures the peeker already saw visible outside the slit', () => {
+    global.game.user.isGM = false;
+    const observer = createMockToken({
+      id: 'observer',
+      flags: visibilityV2Flags({ target: 'observed' }),
+    });
+    observer.vision = { los: { containsPoint: jest.fn(() => false) } };
+    const target = createMockToken({ id: 'target' });
+    target.document.documentName = 'Token';
+    global.canvas = {
+      ...global.canvas,
+      tokens: {
+        controlled: [observer],
+        get: jest.fn((id) => (id === 'observer' ? observer : id === 'target' ? target : null)),
+        placeables: [observer, target],
+      },
+    };
+    peekRegistry.set('observer', { origin: { x: 0, y: 0 }, direction: 0, fov: 30, range: 200 }, 1000);
+    target.detectionFilter = { id: 'core-soundwave-filter' };
+
+    expect(wrapCanvasVisibilityTest(jest.fn(() => false), [{ x: 250, y: 0 }], { object: target })).toBe(true);
+    expect(target.detectionFilter).toBeNull();
+    expect(wrapCanvasVisibilityTest(jest.fn(() => true), [{ x: 250, y: 0 }], { object: target })).toBe(true);
+  });
+
+  test('active peek draws already-seen creatures normally when core only hears them', () => {
+    global.game.user.isGM = false;
+    const observer = createMockToken({
+      id: 'observer',
+      flags: visibilityV2Flags({ target: 'observed' }),
+    });
+    observer.vision = { los: { containsPoint: jest.fn(() => false) } };
+    const target = createMockToken({ id: 'target' });
+    target.document.documentName = 'Token';
+    global.canvas = {
+      ...global.canvas,
+      tokens: {
+        controlled: [observer],
+        get: jest.fn((id) => (id === 'observer' ? observer : id === 'target' ? target : null)),
+        placeables: [observer, target],
+      },
+    };
+    peekRegistry.set('observer', { origin: { x: 0, y: 0 }, direction: 0, fov: 30, range: 200 }, 1000);
+    const heardOnly = jest.fn(() => {
+      target.detectionFilter = { id: 'core-soundwave-filter' };
+      return true;
+    });
+
+    expect(wrapCanvasVisibilityTest(heardOnly, [{ x: 250, y: 0 }], { object: target })).toBe(true);
+    expect(target.detectionFilter).toBeNull();
+  });
+
+  test('active peek still hides creatures the peeker could not see outside the slit', () => {
+    global.game.user.isGM = false;
+    const observer = createMockToken({
+      id: 'observer',
+      flags: visibilityV2Flags({ target: 'undetected' }),
+    });
+    observer.vision = { los: { containsPoint: jest.fn(() => false) } };
+    const target = createMockToken({ id: 'target' });
+    target.document.documentName = 'Token';
+    global.canvas = {
+      ...global.canvas,
+      tokens: {
+        controlled: [observer],
+        get: jest.fn((id) => (id === 'observer' ? observer : id === 'target' ? target : null)),
+        placeables: [observer, target],
+      },
+    };
+    peekRegistry.set('observer', { origin: { x: 0, y: 0 }, direction: 0, fov: 30, range: 200 }, 1000);
+
+    expect(wrapCanvasVisibilityTest(jest.fn(() => true), [{ x: 250, y: 0 }], { object: target })).toBe(false);
   });
 
   test('active peek keeps core visibility for points inside the peek polygon', () => {

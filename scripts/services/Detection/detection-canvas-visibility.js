@@ -9,6 +9,8 @@ import {
 import { isSelectAllTokenVisibilityBypassActive } from './select-all-token-visibility-bypass.js';
 import { isNativeVisibilityProbe } from './native-visibility-probe.js';
 import { peekRegistry } from '../Peek/PeekRegistry.js';
+import { isPeekFloorVisible } from '../Peek/peek-visibility-floor.js';
+import { getVisibilityMap } from '../../stores/visibility-map.js';
 import { isPointInCone } from '../Peek/peek-geometry.js';
 import { isVisualSenseType } from '../../visibility/StatelessVisibilityCalculator.js';
 import { getDetectionBetween } from '../../stores/detection-map.js';
@@ -120,6 +122,21 @@ function activePeekObserversForCanvasTest(options) {
   return out;
 }
 
+function peekFloorKeepsVisible(observer, target) {
+  if (target?.document?.documentName !== 'Token') return false;
+  return isPeekFloorVisible({
+    observerId: tokenIdOf(observer),
+    targetId: tokenIdOf(target),
+    readBaselineMap: () => getVisibilityMap(observer),
+  });
+}
+
+function activePeekFloorKeepsVisible(target, options) {
+  return activePeekObserversForCanvasTest(options).some((observer) =>
+    peekFloorKeepsVisible(observer, target),
+  );
+}
+
 function coreVisibilityAllowedByActivePeek(points, options) {
   const observers = activePeekObserversForCanvasTest(options);
   if (!observers.length) return true;
@@ -130,6 +147,7 @@ function coreVisibilityAllowedByActivePeek(points, options) {
     const peek = peekRegistry.get(tokenIdOf(observer));
     if (!peek?.origin) return false;
     if (getVisionerVisibilityBetweenTokens(observer, target) === 'hidden') return true;
+    if (peekFloorKeepsVisible(observer, target)) return true;
     return testPoints.some((point) => pointWithinPeekBounds(observer, peek, point));
   });
 }
@@ -195,10 +213,14 @@ export function wrapCanvasVisibilityTest(wrapped, points, options = {}) {
     return wrapped(points, options);
   }
   const result = wrapped(points, options);
+  const target = options?.object;
+  if (activePeekFloorKeepsVisible(target, options)) {
+    target.detectionFilter = null;
+    return true;
+  }
   if (result === true && !coreVisibilityAllowedByActivePeek(points, options)) {
     return false;
   }
-  const target = options?.object;
   // Core has no modes for several PF2e senses. An AVS precise observation
   // supplies their token visibility, while Foundry still handles normal sight.
   if (result === false && hasPreciseNonVisualObservation(target, options) &&

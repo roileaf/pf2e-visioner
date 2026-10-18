@@ -597,6 +597,43 @@ describe('BatchProcessor', () => {
     );
   });
 
+  test('a peeking observer never downgrades creatures it could already see', async () => {
+    const { peekRegistry } = await import('../../../scripts/services/Peek/PeekRegistry.js');
+    const { clearPeekVisibilityFloors } = await import(
+      '../../../scripts/services/Peek/peek-visibility-floor.js'
+    );
+    const observer = makeToken('A', 0, 0);
+    const target = makeToken('B', 100, 0);
+    global.canvas.tokens.placeables = [observer, target];
+    processor.maxVisibilityDistance = 100;
+    processor.visionAnalyzer = {
+      hasLineOfSight: jest.fn(() => false),
+      getVisionCapabilities: jest.fn(() => ({
+        sensingSummary: { precise: [], imprecise: [], hearing: null },
+        isDeafened: true,
+      })),
+    };
+    processor.visibilityMapService = {
+      getVisibilityMap: jest.fn((token) => (token.document.id === 'A' ? { B: 'observed' } : {})),
+      getDocumentVisibilityMap: jest.fn((token) => (token.document.id === 'A' ? { B: 'observed' } : {})),
+    };
+    clearPeekVisibilityFloors();
+    peekRegistry.set('A', { origin: { x: 50, y: 50 }, direction: 0, fov: 20 }, 1);
+
+    let res;
+    try {
+      res = await processor.process(global.canvas.tokens.placeables, new Set(['A']), {});
+    } finally {
+      peekRegistry.clear('A');
+      clearPeekVisibilityFloors();
+    }
+
+    const downgrade = res.updates.find(
+      (u) => u.observer?.document?.id === 'A' && u.target?.document?.id === 'B',
+    );
+    expect(downgrade).toBeUndefined();
+  });
+
   test('controlled source-polygon LOS respects ledge blocking', async () => {
     const { invalidateLedgeWallCache } = await import('../../../scripts/cover/ledge/ledge-walls.js');
     const previousControlled = global.canvas.tokens.controlled;

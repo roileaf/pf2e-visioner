@@ -18,6 +18,7 @@ export class PeekRegistry {
       userName: data.userName ?? null,
       userId: data.userId ?? null,
       ts: now,
+      startedAt: this._peeks.get(tokenId)?.startedAt ?? now,
     });
   }
 

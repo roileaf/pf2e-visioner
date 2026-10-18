@@ -5,6 +5,7 @@ import { applyActiveSceneHearingRangeLimit } from '../../../services/scene-heari
 import { SensePrecomputer } from '../../../services/SensePrecomputer.js';
 import { LevelsIntegration } from '../../../services/LevelsIntegration.js';
 import { isTokenSightBlockedByLedge } from '../../../cover/ledge/ledge-vision.js';
+import { applyPeekVisibilityFloor } from '../../../services/Peek/peek-visibility-floor.js';
 import { sceneDistanceToPixels } from '../../../helpers/geometry-utils.js';
 import { getLogger } from '../../../utils/logger.js';
 import { getCacheInvalidationRevision } from '../../../utils/cache-invalidation.js';
@@ -1079,6 +1080,23 @@ export class BatchProcessor {
           }
         }
         detailedTimings.visibilityCalculations += this.nowProvider() - stageStart;
+
+        if (!hasOverride1) {
+          effectiveVisibility1 = applyPeekVisibilityFloor({
+            observerId: aId,
+            targetId: bId,
+            computed: effectiveVisibility1,
+            readBaselineMap: () => visCache.getMapById(aId) ?? {},
+          });
+        }
+        if (!hasOverride2) {
+          effectiveVisibility2 = applyPeekVisibilityFloor({
+            observerId: bId,
+            targetId: aId,
+            computed: effectiveVisibility2,
+            readBaselineMap: () => visCache.getMapById(bId) ?? {},
+          });
+        }
 
         // Queue updates if changed from ORIGINAL map state (before any calculations)
         // OR if we need to force ephemeral effect updates (e.g., when suppression flags change)
