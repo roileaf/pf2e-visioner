@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.14.4] - 2026-10-18
+
+### Fixed
+
+- Hovering tokens no longer drops the frame rate. Redrawing the hover badges forced the browser to re-lay out the whole Foundry page on every mouse move; the badges now live in their own isolated layer, so hovering across crowded tokens stays smooth.
+- Holding **Alt** or **O** to show badges for all tokens no longer hitches on press and release. The O overlay is now handled only by its keybinding (it was firing twice), and the canvas position is measured once until the window is resized.
+
 ## [8.14.3] - 2026-10-18
 
 ### Fixed
