@@ -1,5 +1,11 @@
 # Changelog
 
+## [8.14.6] - 2026-10-19
+
+### Fixed
+
+- Moving tokens on big scenes with the PF2e HUD module active no longer re-checks the HUD health setting hundreds of times per move. Visioner now updates an open HUD tooltip once per batch of token changes, and skips the work entirely when no tooltip is open.
+
 ## [8.14.5] - 2026-10-19
 
 ### Fixed
