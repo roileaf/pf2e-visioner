@@ -51,8 +51,15 @@ export function registerPf2eHudHealthStatusIntegration() {
     syncPf2eHudHealthStatus(app, html);
   });
   Hooks.on('closeApplicationV2', (app) => apps.delete(app));
+  let refreshQueued = false;
   const refresh = () => {
+    refreshQueued = false;
     for (const app of apps) syncPf2eHudHealthStatus(app);
+  };
+  const queueRefresh = () => {
+    if (refreshQueued || !apps.size) return;
+    refreshQueued = true;
+    queueMicrotask(refresh);
   };
   for (const event of [
     'pf2e-visioner.visibilityMapUpdated',
@@ -65,7 +72,7 @@ export function registerPf2eHudHealthStatusIntegration() {
     'renderSceneControls',
   ]) {
     // Let token presentation and the current-view caches settle before reading them.
-    Hooks.on(event, () => queueMicrotask(refresh));
+    Hooks.on(event, queueRefresh);
   }
   Hooks.on('canvasTearDown', () => apps.clear());
 }
