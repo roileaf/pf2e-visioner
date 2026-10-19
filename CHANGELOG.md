@@ -1,5 +1,11 @@
 # Changelog
 
+## [8.14.5] - 2026-10-19
+
+### Fixed
+
+- Big scenes no longer hitch after every token move. When a creature stopped being detected, Visioner removed it from its detection record in memory but never from the saved token data, so every visibility recalculation saw a "change" and re-saved the same detection data for several tokens on each move. Each save made the system re-prepare those actors. Removed entries are now actually deleted, so recalculations with nothing new save nothing.
+
 ## [8.14.4] - 2026-10-18
 
 ### Fixed
