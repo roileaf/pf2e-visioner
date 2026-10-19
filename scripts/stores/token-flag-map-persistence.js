@@ -55,6 +55,23 @@ export function buildTokenFlagSetUpdate({ document, moduleId, flagKey, value } =
   return { _id: document?.id, [`flags.${moduleId}.${flagKey}`]: value };
 }
 
+function withRemovedEntryDeletions(currentMap, nextMap) {
+  const value = { ...(nextMap || {}) };
+  for (const key of Object.keys(currentMap || {})) {
+    if (!(key in value)) value[`-=${key}`] = null;
+  }
+  return value;
+}
+
+function buildTokenFlagMapReplaceUpdate({ document, moduleId, flagKey, currentMap, nextMap }) {
+  return buildTokenFlagSetUpdate({
+    document,
+    moduleId,
+    flagKey,
+    value: withRemovedEntryDeletions(currentMap, nextMap),
+  });
+}
+
 export function buildTokenFlagUnsetUpdate({
   document,
   moduleId,
@@ -189,7 +206,13 @@ export async function setTokenFlagMap({
     onMetrics?.(skippedMetrics);
     return { written: 0, skipped: 1 };
   }
-  const update = buildTokenFlagSetUpdate({ document, moduleId, flagKey, value: map });
+  const update = buildTokenFlagMapReplaceUpdate({
+    document,
+    moduleId,
+    flagKey,
+    currentMap,
+    nextMap: map,
+  });
   await document.update?.(omitDocumentId(update), updateOptions);
   invalidate?.(invalidationReason, { written: 1, flagKey, tokenId: document.id });
   onMetrics?.({
@@ -228,11 +251,12 @@ export async function applyTokenFlagMapUpdates({
     const nextMap = entry.map ?? {};
     if (!hasTokenFlagMapChanged(currentMap, nextMap)) continue;
 
-    const update = buildTokenFlagSetUpdate({
+    const update = buildTokenFlagMapReplaceUpdate({
       document,
       moduleId,
       flagKey,
-      value: nextMap,
+      currentMap,
+      nextMap,
     });
     updates.push(update);
     fallbackUpdates.push({ token, document, update });
