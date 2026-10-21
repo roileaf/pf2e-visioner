@@ -65,14 +65,18 @@ class SavingThrowUseCase extends BaseAutoCoverUseCase {
    */
   async handleCheckDialog(dialog, html) {
     const ctx = dialog?.context || {};
-    let attacker = this._resolveAttackerFromCtx(ctx);
+    // PF2e's save context has the saver as both `token` and `target`; the creature whose effect
+    // forced the save is `origin`. Measuring from the saver to itself gave it (greater) cover.
+    let attacker = this._resolveOriginTokenFromCtx(ctx) ?? this._resolveAttackerFromCtx(ctx);
     let target = this._resolveTargetFromCtx(ctx);
-    if (!attacker || !target) return;
+    if (!target) return;
+    if (attacker && attacker.id === target.id) attacker = null;
 
     // Check for active template data with precalculated cover state
     let state;
     const templateMatch = this._getLatestTemplateForTarget(target.id);
     if (templateMatch) state = templateMatch.data.targets[target.id].state;
+    if (!attacker && !state) return;
 
     let highestFoundManualCover = 'none';
     // Fallback to direct token calculation if no template data
@@ -640,6 +644,25 @@ class SavingThrowUseCase extends BaseAutoCoverUseCase {
     }
 
     return latest;
+  }
+
+  /**
+   * The token of the creature whose effect forced this save (PF2e's `origin`), if it has one
+   * @param {Object} ctx - Check context
+   * @returns {Object|null}
+   * @private
+   */
+  _resolveOriginTokenFromCtx(ctx) {
+    try {
+      const ref = ctx?.origin?.token;
+      if (ref?.object?.id) return ref.object;
+      const tokenId = this.normalizeTokenRef(typeof ref === 'string' ? ref : ref?.id);
+      const byId = tokenId ? canvas?.tokens?.get?.(tokenId) : null;
+      if (byId) return byId;
+      return ctx?.origin?.actor?.getActiveTokens?.()?.[0] ?? null;
+    } catch (_) {
+      return null;
+    }
   }
 
   /**
