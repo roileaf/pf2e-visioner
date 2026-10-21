@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.14.7] - 2026-10-21
+
+### Added
+
+- `adjustCover` rule element operations accept `mode: "minimum"` with a `state` (`lesser`, `standard`, or `greater`). Cover is raised to at least that state and never lowered, so effects like Covering Stance can grant "at least lesser cover" on top of whatever cover the creature already has.
+- `game.modules.get("pf2e-visioner").api.coverAdjustmentModes` lists the supported `adjustCover` modes, so other modules can detect `minimum` support.
+
 ## [8.14.6] - 2026-10-19
 
 ### Fixed
