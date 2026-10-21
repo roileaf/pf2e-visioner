@@ -262,45 +262,29 @@ class SavingThrowUseCase extends BaseAutoCoverUseCase {
           if (!attacker) {
             // Prefer the spell's caster when available (template creator or context origin),
             // falling back to controlled/targeted token.
+            // The caster is a canvas token, never the saver: a save's `token` and `actor` are the
+            // saver, and PF2e's `origin.token` is a TokenDocument (no center), which put the cover
+            // origin at the scene's corner and gave every saver greater cover.
+            const isSaver = (token) => !token?.id || token.id === target.id;
             let caster = null;
-            const targeted = Array.from(game.user.targets || [])?.[0]?.document?.object;
             try {
-              // 1) Try template creator ID (may be a UUID like Scene.X.Token.Y or Actor.X)
-              if (templateData?.creatorId) {
-                try {
-                  const resolved = templateData.creatorId;
-                  caster = resolved?.document?.object ?? resolved ?? null;
-                } catch (_) {
-                  // fallback: try normalizing to a token id
-                  const norm = this.normalizeTokenRef(templateData.creatorId);
-                  caster = norm ? canvas.tokens.get(norm) : null;
-                }
+              // 1) The template's creator (a token id, or "actor:<id>" when it has no token)
+              const creatorId = this.normalizeTokenRef(templateData?.creatorId);
+              if (creatorId && !String(creatorId).startsWith('actor:')) {
+                caster = canvas.tokens.get(creatorId) ?? null;
               }
 
-              // 2) Try context origin (often a UUID for the originating item/actor/token)
-              if (!caster && context?.origin) {
-                const resolved = context?.origin?.token;
-                caster = resolved?.document?.object ?? resolved ?? null;
-              }
+              // 2) The creature whose effect forced the save
+              if (isSaver(caster)) caster = this._resolveOriginTokenFromCtx(context);
 
-              // 3) Try context.token (embedded token object) or actor's active token
-              if (!caster) {
-                caster = context?.token?.object ?? canvas.tokens.get(context?.token?.id) ?? null;
-              }
-              if (!caster && context?.actor?.getActiveTokens) {
-                caster = context.actor.getActiveTokens()?.[0] ?? null;
-              }
-
-              // 4) Final fallbacks: controlled token or first targeted token
-              if (!caster) {
-                caster = canvas.tokens.controlled?.[0] || targeted;
-              }
-            } catch (e) {
-              // Ensure we at least fall back if something goes wrong resolving UUIDs
-              caster = canvas.tokens.controlled?.[0] || targeted;
+              // 3) Final fallbacks: controlled token or first targeted token
+              if (isSaver(caster)) caster = canvas.tokens.controlled?.[0] ?? null;
+              if (isSaver(caster)) caster = Array.from(game.user.targets || [])?.[0]?.document?.object ?? null;
+            } catch (_) {
+              caster = null;
             }
 
-            attacker = caster;
+            attacker = isSaver(caster) ? null : caster;
           }
           isTargetInTemplate = true;
         }

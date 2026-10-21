@@ -76,6 +76,28 @@ describe('SavingThrowUseCase dialog roles', () => {
     );
   });
 
+  test('a save rolled without the dialog measures from the origin token, not its document', async () => {
+    const useCase = await loadUseCase();
+    mockCoverUIManager.showPopupAndApply = jest.fn().mockResolvedValue({ chosen: null });
+    const saver = tokenWithDocument('kimerus');
+    const skink = tokenWithDocument('skink');
+    saver.actor.getActiveTokens = () => [saver];
+    const context = {
+      type: 'saving-throw',
+      actor: saver.actor,
+      token: saver.document,
+      target: { actor: saver.actor, token: saver.document },
+      origin: { actor: skink.actor, token: skink.document },
+      options: ['area-effect'],
+    };
+
+    await useCase.handleCheckRoll({ modifiers: [], push: jest.fn() }, context);
+
+    const [attacker, defender] = mockAutoCoverSystem.detectCoverBetweenTokens.mock.calls[0] ?? [];
+    expect(attacker).toBe(skink);
+    expect(defender).toBe(saver);
+  });
+
   test('never measures cover from the saver to itself', async () => {
     const useCase = await loadUseCase();
     const saver = tokenWithDocument('kimerus');

@@ -4,6 +4,29 @@
  */
 
 import autoCoverSystem from './AutoCoverSystem.js';
+
+/**
+ * Center of a region's shape in pixels. A v14 emanation has no x/y of its own, only the `base` it
+ * surrounds (a token: top-left in pixels, size in grid spaces), so reading x/y put it at 0,0.
+ * @param {Object} shape - Region shape data
+ * @returns {{x: number, y: number}|null}
+ */
+export function regionShapeCenter(shape) {
+  const x = Number(shape?.x);
+  const y = Number(shape?.y);
+  if (shape?.x != null && shape?.y != null && Number.isFinite(x) && Number.isFinite(y)) return { x, y };
+  const base = shape?.base;
+  if (!base) return null;
+  if (base.type === 'circle' || base.type === 'ellipse') return regionShapeCenter({ x: base.x, y: base.y });
+  const scale = base.type === 'token' ? canvas?.grid?.size || 100 : 1;
+  const left = Number(base.x);
+  const top = Number(base.y);
+  const width = Number(base.width) * scale;
+  const height = Number(base.height) * scale;
+  if (![left, top, width, height].every(Number.isFinite)) return null;
+  return { x: left + width / 2, y: top + height / 2 };
+}
+
 export class TemplateManager {
   /**
    * Flag scope for template data
@@ -243,9 +266,10 @@ export class TemplateManager {
     // Get template details
     const shape = isRegion ? document.shapes?.[0] : null;
     if (isRegion && !shape) return null;
-    const x = Number(shape?.x ?? document?.x ?? 0);
-    const y = Number(shape?.y ?? document?.y ?? 0);
-    const center = { x, y };
+    const center = (isRegion ? regionShapeCenter(shape) : null) ?? {
+      x: Number(shape?.x ?? document?.x ?? 0),
+      y: Number(shape?.y ?? document?.y ?? 0),
+    };
     const tType = String(shape?.type || document.t || document.type || 'circle');
     const radiusFeet = isRegion ? (Number(shape.radius ?? shape.length) || 0) * (canvas.scene?.grid?.distance || 5) / (canvas.grid?.size || 100) : Number(document.distance) || 0;
     const dirDeg = Number(shape?.rotation ?? document.direction ?? 0);
