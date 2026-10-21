@@ -531,6 +531,10 @@
           "MIRROR_IMAGE": {
             "NAME": "Mirror Image",
             "DESCRIPTION": "Illusory duplicates prevent attackers from gaining tactical advantages. Off-guard effects from concealment, hidden, or undetected states are suppressed."
+          },
+          "COVERING_STANCE": {
+            "NAME": "Covering Stance",
+            "DESCRIPTION": "The bearer has at least lesser cover against every creature. Existing standard or greater cover is kept."
           }
         }
       }

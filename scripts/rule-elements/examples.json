@@ -331,5 +331,26 @@
         "priority": 120
       }
     ]
+  },
+  "coveringStance": {
+    "name": "PF2E_VISIONER.RULE_ELEMENTS.EFFECT.EXAMPLES.COVERING_STANCE.NAME",
+    "description": "PF2E_VISIONER.RULE_ELEMENTS.EFFECT.EXAMPLES.COVERING_STANCE.DESCRIPTION",
+    "rules": [
+      {
+        "key": "PF2eVisionerEffect",
+        "operations": [
+          {
+            "type": "adjustCover",
+            "mode": "minimum",
+            "state": "lesser",
+            "direction": "from",
+            "observers": "all",
+            "scope": "while-active",
+            "source": "covering-stance"
+          }
+        ],
+        "priority": 120
+      }
+    ]
   }
 }

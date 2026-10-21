@@ -16,6 +16,7 @@ export class CoverAdjustment {
       mode: operation.mode,
       steps: operation.steps,
       amount: operation.amount,
+      state: operation.state,
       scope: operation.scope || 'while-active',
       predicate: operation.predicate,
     };

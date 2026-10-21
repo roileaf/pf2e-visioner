@@ -5,6 +5,7 @@ import { getVisibilityOverrideFactor } from './rule-elements/visibility-override
 
 import { MODULE_ID } from './constants.js';
 import autoCoverSystem from './cover/auto-cover/AutoCoverSystem.js';
+import { COVER_ADJUSTMENT_MODES } from './cover/cover-adjustments.js';
 import { scheduleCanvasPerceptionUpdate } from './helpers/perception-refresh.js';
 import { calculateRealDistanceInFeet } from './helpers/geometry-utils.js';
 import { getCoverMap } from './stores/cover-map.js';
@@ -1838,6 +1839,10 @@ export class Pf2eVisionerApi {
    */
   static getCoverStates() {
     return ['none', 'lesser', 'standard', 'greater'];
+  }
+
+  static get coverAdjustmentModes() {
+    return [...COVER_ADJUSTMENT_MODES];
   }
 
   static _resolveActorRef(tokenActorOrId) {

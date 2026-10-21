@@ -25,6 +25,8 @@ Steps clamp to the ladder: stepping down from None stays at None; stepping up fr
 
 For `mode: "bonus"`, the adjustment amount is subtracted from the AC bonus (e.g., `-2` reduces any cover AC bonus by 2). The cover values map to AC bonuses: none = 0, lesser = 1, standard = 2, greater = 4. After applying the adjustment, the result clamps back to the cover ladder.
 
+For `mode: "minimum"`, the result is the higher of the current cover and `state` (e.g., `state: "lesser"` turns none into lesser and leaves lesser, standard, and greater unchanged). An unknown `state` leaves cover unchanged.
+
 ### Scopes
 
 - **`while-active`**: The adjustment persists for the entire duration of the effect
@@ -34,16 +36,18 @@ For `mode: "bonus"`, the adjustment amount is subtracted from the AC bonus (e.g.
 
 ### adjustCover
 
-Reduces a target's effective cover at roll time without permanently changing stored cover values. Useful for spells and abilities that penetrate cover or ignore it.
+Adjusts a target's effective cover at roll time without permanently changing stored cover values. Useful for spells and abilities that penetrate cover or ignore it, and for abilities that guarantee a minimum level of cover.
 
 **Fields:**
 
 - `type` (required): `"adjustCover"`
-- `mode` (required): `"step"` or `"bonus"`
+- `mode` (required): `"step"`, `"bonus"`, or `"minimum"`
   - `"step"`: Adjust by cover steps (e.g., `-1` reduces standard to lesser)
   - `"bonus"`: Adjust by AC bonus amount (e.g., `-2` for a -2 AC bonus)
+  - `"minimum"`: Raise cover to at least `state`, never lowering it
 - `steps` (required if mode is `"step"`): Integer, positive or negative (e.g., `-1`, `2`)
 - `amount` (required if mode is `"bonus"`): Integer AC bonus (e.g., `-2`)
+- `state` (required if mode is `"minimum"`): `"lesser"`, `"standard"`, or `"greater"`
 - `scope` (required): `"while-active"` or `"next-attack"`
 - `direction` (required): `"from"` (observer gains reduced cover view) or `"to"` (target gains reduced cover protection)
 - `observers` (required if direction is `"from"`): `"all"`, `"enemies"`, `"allies"`, `"targeted"`, `"selected"`, or `"specific"`
@@ -103,6 +107,29 @@ All observers treat the target as having one less step of cover (e.g., standard 
 ```
 
 When rolling an attack with the phase-bolt item, the target's cover AC bonus is reduced by 2 on the next attack roll, then the adjustment clears.
+
+**Covering Stance (minimum, while-active):**
+```json
+{
+  "key": "PF2eVisionerEffect",
+  "operations": [
+    {
+      "type": "adjustCover",
+      "mode": "minimum",
+      "state": "lesser",
+      "direction": "from",
+      "observers": "all",
+      "scope": "while-active",
+      "source": "covering-stance"
+    }
+  ],
+  "priority": 120
+}
+```
+
+The creature carrying the effect has at least lesser cover against every attacker while the effect exists. Existing standard or greater cover is kept. Removing the effect removes the adjustment.
+
+Other modules can check support with `game.modules.get("pf2e-visioner").api.coverAdjustmentModes`, which returns `["step", "bonus", "minimum"]`.
 
 **Scoped to a specific creature:**
 

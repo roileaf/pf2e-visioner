@@ -1,6 +1,7 @@
 import { PredicateHelper } from '../rule-elements/PredicateHelper.js';
 
 const COVER_ORDER = ['none', 'lesser', 'standard', 'greater'];
+export const COVER_ADJUSTMENT_MODES = Object.freeze(['step', 'bonus', 'minimum']);
 const COVER_BONUS = { none: 0, lesser: 1, standard: 2, greater: 4 };
 
 export function adjustCoverState(state, adjustment) {
@@ -16,7 +17,17 @@ export function adjustCoverState(state, adjustment) {
     if (bonus >= 1) return 'lesser';
     return 'none';
   }
+  if (adjustment?.mode === 'minimum') {
+    return raiseCoverToMinimum(state, adjustment.state);
+  }
   return state;
+}
+
+function raiseCoverToMinimum(state, minimum) {
+  const minimumIndex = COVER_ORDER.indexOf(minimum);
+  if (minimumIndex < 0) return state;
+  const index = Math.max(0, COVER_ORDER.indexOf(state));
+  return COVER_ORDER[Math.max(index, minimumIndex)];
 }
 
 export function applyCoverAdjustments(state, adjustments, rollOptions) {

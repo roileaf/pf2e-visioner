@@ -117,3 +117,42 @@ describe('CoverAdjustment storage', () => {
     expect(target.document.getFlag('pf2e-visioner', 'coverAdjustments').caster).toEqual([{ id: 'other' }]);
   });
 });
+
+describe('CoverAdjustment minimum mode', () => {
+  const coveringStance = {
+    type: 'adjustCover',
+    mode: 'minimum',
+    state: 'lesser',
+    direction: 'from',
+    observers: 'all',
+    scope: 'while-active',
+    source: 'covering-stance',
+  };
+
+  test("direction 'from' gives the bearer minimum cover against each observer", async () => {
+    const ally = makeToken('ally');
+    const enemy = makeToken('enemy');
+    CoverAdjustment.getTargetTokens = () => [enemy];
+    await CoverAdjustment.applyCoverAdjustment(coveringStance, ally, { item: { slug: 'covering-stance' }, priority: 120 });
+    expect(CoverAdjustment.getActiveCoverAdjustments(enemy, ally)).toEqual([
+      { id: 'covering-stance', priority: 120, mode: 'minimum', state: 'lesser', scope: 'while-active' },
+    ]);
+  });
+
+  test("direction 'to' gives each target minimum cover against the bearer", async () => {
+    const bearer = makeToken('bearer');
+    const foe = makeToken('foe');
+    CoverAdjustment.getTargetTokens = () => [foe];
+    await CoverAdjustment.applyCoverAdjustment({ ...coveringStance, direction: 'to', targets: 'all' }, bearer, null);
+    expect(CoverAdjustment.getActiveCoverAdjustments(bearer, foe)[0]).toMatchObject({ mode: 'minimum', state: 'lesser' });
+  });
+
+  test('removal without a rule element (deleted item) clears the minimum adjustment', async () => {
+    const ally = makeToken('ally');
+    const enemy = makeToken('enemy');
+    CoverAdjustment.getTargetTokens = () => [enemy];
+    await CoverAdjustment.applyCoverAdjustment(coveringStance, ally, null);
+    await CoverAdjustment.removeCoverAdjustment(coveringStance, ally, null);
+    expect(CoverAdjustment.getActiveCoverAdjustments(enemy, ally)).toEqual([]);
+  });
+});

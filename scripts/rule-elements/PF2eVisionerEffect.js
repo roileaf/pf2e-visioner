@@ -233,7 +233,7 @@ export function createPF2eVisionerEffectRuleElement(baseRuleElementClass, fields
 
           mode: new fields.StringField({
             required: false,
-            choices: ['one-way', 'two-way', 'replace', 'reverse', 'step', 'bonus'],
+            choices: ['one-way', 'two-way', 'replace', 'reverse', 'step', 'bonus', 'minimum'],
             initial: 'one-way',
           }),
 
