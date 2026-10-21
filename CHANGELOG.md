@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.14.9] - 2026-10-21
+
+### Fixed
+
+- **Area saves rolled without the dialog no longer get greater cover.** When a save skipped the dialog (rolled from a chat card or PF2e Toolbelt's Target Helper), Visioner used PF2e's origin token document as the attacker. It has no position on the canvas, so cover was measured from the scene's corner and every saver got greater cover. Cover is now measured from the origin creature's token, and never from the saver itself.
+- **Emanation regions are centered on their creature.** A Foundry v14 token emanation (like one Combater places for Launch Metal) has no center of its own, so Visioner put it at the scene's corner. Cover from an emanation is now measured from the token it surrounds.
+
 ## [8.14.8] - 2026-10-21
 
 ### Fixed
