@@ -1,5 +1,11 @@
 # Changelog
 
+## [8.14.8] - 2026-10-21
+
+### Fixed
+
+- **Saving throws no longer get greater cover from the saver itself.** In the save dialog, Visioner took both ends of the cover check from the saver, so an area effect like Launch Metal ("all creatures adjacent to the skink") gave every adjacent target greater cover. Cover is now measured from the creature whose effect forced the save to the creature saving.
+
 ## [8.14.7] - 2026-10-21
 
 ### Added
