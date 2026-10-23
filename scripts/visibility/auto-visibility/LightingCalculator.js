@@ -250,6 +250,9 @@ export class LightingCalculator {
     // iterate the lights, skipping hidden or inactive lights as well as global lights
     for (const light of canvas.effects.lightSources) {
       if (!light.active || light instanceof foundry.canvas.sources.GlobalLightSource) continue;
+      // A passing effect light that says it reveals nothing (Animater's spell light, unless its homebrew
+      // "Effect light reveals creatures" setting is on) lights the scene but not the creatures in it.
+      if (light.revealsCreatures === false) continue;
 
       // Do a cheap distance check to skip obviously out-of-range sources
       // We nudge out the radius a bit to not reject partially illuminated tokens
