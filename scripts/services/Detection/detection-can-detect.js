@@ -15,6 +15,7 @@ import { isSelectAllTokenVisibilityBypassActive } from './select-all-token-visib
 import { isPartyActorToken } from '../../utils/token-actor.js';
 import { isNativeVisibilityProbe } from './native-visibility-probe.js';
 import { isTokenSightBlockedByLedge } from '../../cover/ledge/ledge-vision.js';
+import { liveImpreciseSenseDuringMove } from './during-move-live-hearing.js';
 
 export function createCanDetectVisibilityWrapper(threshold) {
   return function wrapCanDetectVisibility(wrapped, visionSource, target, ...args) {
@@ -89,13 +90,13 @@ function resolveDetectionDuringMovement(observer, target, visibility, modeId, ca
     if (targetIsLootOrHazard(target)) return false;
     if (hasUndetectedAvsOverride(observer, target)) return false;
     const nonVisualMode = !modeId || NON_VISUAL_DETECTION_MODE_IDS.has(modeId);
-    if (nonVisualMode) return false;
+    if (nonVisualMode) return liveSenseRevealsUndetected(observer, target, visibility, modeId);
     return canDetect;
   }
   if (visibility === 'hidden') {
     if (targetIsLootOrHazard(target)) return false;
     const nonVisualMode = !modeId || NON_VISUAL_DETECTION_MODE_IDS.has(modeId);
-    if (nonVisualMode) return true;
+    if (nonVisualMode) return liveSenseKeepsHidden(observer, target, modeId);
     if (hasHiddenAvsOverride(observer, target)) return false;
     return canDetect;
   }
@@ -103,6 +104,20 @@ function resolveDetectionDuringMovement(observer, target, visibility, modeId, ca
     return true;
   }
   return canDetect;
+}
+
+function isKnownNonVisualMode(modeId) {
+  return !!modeId && NON_VISUAL_DETECTION_MODE_IDS.has(modeId);
+}
+
+function liveSenseRevealsUndetected(observer, target, visibility, modeId) {
+  if (visibility !== 'undetected' || !isKnownNonVisualMode(modeId)) return false;
+  return liveImpreciseSenseDuringMove(observer, target) === true;
+}
+
+function liveSenseKeepsHidden(observer, target, modeId) {
+  if (!isKnownNonVisualMode(modeId) || hasHiddenAvsOverride(observer, target)) return true;
+  return liveImpreciseSenseDuringMove(observer, target) !== false;
 }
 
 function canUseVisionerHiddenDetection(

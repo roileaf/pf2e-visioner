@@ -21,6 +21,10 @@ import { isVisualSenseType } from '../visibility/StatelessVisibilityCalculator.j
 import { isPartyActorToken } from '../utils/token-actor.js';
 import { releaseDetectionFilterMesh, suppressDetectionFilterMesh } from './Detection/detection-filter-mesh-suppression.js';
 import { hasGmObserverHiddenPresentation } from './GmObserverView/gm-observer-view.js';
+import {
+  liveImpreciseSenseDuringMove,
+  setLiveImpreciseSenseProbe,
+} from './Detection/during-move-live-hearing.js';
 
 let running = false;
 let cachedSoundwaveFilter = null;
@@ -190,8 +194,38 @@ function hasHiddenAvsOverride(observer, target) {
   }
 }
 
+function hasUndetectedAvsOverride(observer, target) {
+  try {
+    const observerId = observer?.document?.id ?? observer?.id;
+    if (!observerId) return false;
+    const state = target?.document?.getFlag?.('pf2e-visioner', `avs-override-from-${observerId}`)?.state;
+    return state === 'undetected' || state === 'unnoticed';
+  } catch {
+    return false;
+  }
+}
+
 function usesHiddenObjectRendering(target) {
   return target?.actor?.type === 'loot' || target?.actor?.type === 'hazard';
+}
+
+function heardDespiteStoredUndetected(target, observers) {
+  return observers.some(
+    (observer) =>
+      observer !== target &&
+      getVisionerVisibilityBetweenTokens(observer, target) === 'undetected' &&
+      !hasUndetectedAvsOverride(observer, target) &&
+      liveImpreciseSenseDuringMove(observer, target) === true,
+  );
+}
+
+function stillSensedForStoredHidden(target, observers) {
+  return observers.some(
+    (observer) =>
+      observer !== target &&
+      (hasHiddenAvsOverride(observer, target) ||
+        liveImpreciseSenseDuringMove(observer, target) !== false),
+  );
 }
 
 export function targetShouldShowSoundwave(
@@ -200,6 +234,7 @@ export function targetShouldShowSoundwave(
   getVisibility = getVisionerVisibilityBetweenTokens,
   getHiddenOverride = hasHiddenAvsOverride,
   impreciselySensed = impreciselySensedOutOfSight,
+  liveSense = liveImpreciseSenseDuringMove,
 ) {
   if (isSceneTokenVisionDisabled()) return false;
   if (usesHiddenObjectRendering(target)) return false;
@@ -212,21 +247,27 @@ export function targetShouldShowSoundwave(
     if (observer === target) continue;
     if (observerSightContainsTarget(observer, target)) return false;
     const visibility = getVisibility(observer, target);
-    if (visibility === 'hidden') {
-      sensedOutOfSight = true;
-    } else if (
-      (visibility === 'observed' || visibility === 'concealed') &&
-      impreciselySensed(observer, target) &&
-      !legacyLevelsFloorBlocksSightBetween(observer, target)
-    ) {
-      // Freeze+settle keeps the persisted state at the pre-move value, but the observer's live sight
-      // polygon updates during a committed move. A previously-seen target whose live sight is now
-      // lost but that is still sensed imprecisely (heard/tremorsense, not echolocation) has become
-      // hidden - surface its soundwave now instead of waiting for the move-end settle.
+    if (storedStateSensedOutOfSight(visibility, observer, target, impreciselySensed, liveSense)) {
       sensedOutOfSight = true;
     }
   }
   return sensedOutOfSight;
+}
+
+function storedStateSensedOutOfSight(visibility, observer, target, impreciselySensed, liveSense) {
+  if (visibility === 'hidden') return liveSense(observer, target) !== false;
+  if (visibility === 'undetected') {
+    return !hasUndetectedAvsOverride(observer, target) && liveSense(observer, target) === true;
+  }
+  // Freeze+settle keeps the persisted state at the pre-move value, but the observer's live sight
+  // polygon updates during a committed move. A previously-seen target whose live sight is now
+  // lost but that is still sensed imprecisely (heard/tremorsense, not echolocation) has become
+  // hidden - surface its soundwave now instead of waiting for the move-end settle.
+  return (
+    (visibility === 'observed' || visibility === 'concealed') &&
+    impreciselySensed(observer, target) &&
+    !legacyLevelsFloorBlocksSightBetween(observer, target)
+  );
 }
 
 export function setSoundwaveMeshVisible(target, visible) {
@@ -595,7 +636,11 @@ export function refreshSoundwavesForActiveMovement(refreshedToken = null) {
       continue;
     }
     const hardHiddenFromStoredState = targetIsHardHiddenFromCurrentView(target);
-    if (hardHiddenFromStoredState && !filterOverrides.has(target)) {
+    if (
+      hardHiddenFromStoredState &&
+      !filterOverrides.has(target) &&
+      !heardDespiteStoredUndetected(target, currentViewObservers)
+    ) {
       suppressCoreInvisibleHardHiddenTarget(target, { requireRemembered: false });
       continue;
     }
@@ -621,7 +666,11 @@ export function refreshSoundwavesForActiveMovement(refreshedToken = null) {
     const hasLiveSight = observers.some(
       (observer) => observer !== target && observerSightContainsTarget(observer, target),
     );
-    if (!hasLiveSight && targetIsHardHiddenFromCurrentView(target)) {
+    if (
+      !hasLiveSight &&
+      targetIsHardHiddenFromCurrentView(target) &&
+      !heardDespiteStoredUndetected(target, observers)
+    ) {
       removeSoundwaveFilterOverride(target);
       target.detectionFilter = null;
       setSoundwaveMeshVisible(target, false);
@@ -631,7 +680,12 @@ export function refreshSoundwavesForActiveMovement(refreshedToken = null) {
     // Preserve Core hearing only while no observer has effective visual detection. Checking raw
     // geometry here is insufficient for moving light sources; conversely, keeping this override
     // after light perception succeeds delays soundwave removal until movement settlement.
-    if (!gmVisionBypass && protectedCoreSoundwave && !hasLiveSight) {
+    if (
+      !gmVisionBypass &&
+      protectedCoreSoundwave &&
+      !hasLiveSight &&
+      stillSensedForStoredHidden(target, observers)
+    ) {
       showSoundwaveRenderSurface(target);
       continue;
     }
@@ -646,7 +700,8 @@ export function refreshSoundwavesForActiveMovement(refreshedToken = null) {
       !hasLiveSight &&
       observers.every(
         (observer) => getVisionerVisibilityBetweenTokens(observer, target) === 'hidden',
-      )
+      ) &&
+      stillSensedForStoredHidden(target, observers)
     ) {
       // Core's current surface is correct, but its next movement repaint can clear the filter
       // inside our recompute throttle window. Protect and reassert it until movement settles.
@@ -732,3 +787,20 @@ export function startDuringMoveSoundwaveOnDrag(wrapped, ...args) {
   }
   return wrapped(...args);
 }
+
+function hasReportedSenses(capabilities) {
+  const count = (senses) => Object.keys(senses ?? {}).length;
+  return count(capabilities?.precise) + count(capabilities?.imprecise) > 0;
+}
+
+function impreciseSenseVerdict(observer, target) {
+  try {
+    const analyzer = VisionAnalyzer.getInstance?.();
+    if (!analyzer || !hasReportedSenses(analyzer.getSensingCapabilities(observer))) return null;
+  } catch {
+    return null;
+  }
+  return impreciselySensedOutOfSight(observer, target);
+}
+
+setLiveImpreciseSenseProbe(impreciseSenseVerdict);
