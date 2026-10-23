@@ -1,5 +1,11 @@
 # Changelog
 
+## [8.14.11] - 2026-10-23
+
+### Fixed
+
+- **A little less work on every frame for GMs.** Visioner checked PF2e's GM Vision toggle once per frame by reading the setting from Foundry, which in Foundry 14 rebuilds a settings document each time. It now reads the value PF2e already keeps up to date, so this costs nothing per frame and still follows the GM Vision toggle immediately.
+
 ## [8.14.10] - 2026-10-23
 
 ### Fixed
