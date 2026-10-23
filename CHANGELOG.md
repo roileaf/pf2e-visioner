@@ -1,5 +1,11 @@
 # Changelog
 
+## [8.14.13] - 2026-10-23
+
+### Fixed
+
+- **Sound rings follow you while you move in the dark.** In a dark scene, stepping out from behind a wall left creatures you could now hear invisible until the move finished, and stepping behind a wall kept their sound ring until then. During a move Visioner now checks hearing as you go: the ring appears as soon as a creature becomes audible and disappears as soon as walls block its sound. Manual Hidden/Undetected overrides and Unnoticed creatures are unaffected.
+
 ## [8.14.12] - 2026-10-23
 
 ### Added
