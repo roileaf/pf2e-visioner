@@ -21,12 +21,16 @@ export function peekBlockModePresentation(value) {
   return { ...PEEK_BLOCK_MODE_PRESENTATIONS[mode], active: mode !== 'none' };
 }
 
+const PEEK_BLOCK_TOOL_SELECTOR =
+  '[data-tool="pf2e-visioner-block-player-peek"], [data-action="pf2e-visioner-block-player-peek"]';
+
+function sceneControlsElement(root) {
+  return root?.getElementById?.('scene-controls') ?? root?.querySelector?.('#scene-controls') ?? null;
+}
+
 export function syncPeekBlockSceneToolElement(mode, { root = globalThis.document } = {}) {
   const locked = normalizePeekBlockMode(mode) !== 'none';
-  const selector =
-    '#scene-controls [data-tool="pf2e-visioner-block-player-peek"], ' +
-    '#scene-controls [data-action="pf2e-visioner-block-player-peek"]';
-  const elements = root?.querySelectorAll?.(selector) ?? [];
+  const elements = sceneControlsElement(root)?.querySelectorAll?.(PEEK_BLOCK_TOOL_SELECTOR) ?? [];
   for (const element of elements) {
     element.classList?.toggle?.('pf2e-visioner-peek-locked', locked);
   }
