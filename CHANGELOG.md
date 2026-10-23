@@ -1,5 +1,11 @@
 # Changelog
 
+## [8.14.10] - 2026-10-23
+
+### Fixed
+
+- **Selecting tokens no longer stutters on busy UIs.** Every time Foundry redrew the scene controls (which it does on each token selection), Visioner searched the entire page to update its peek-block button, about 10 ms per selection with many modules loaded. It now looks only inside the scene controls.
+
 ## [8.14.9] - 2026-10-21
 
 ### Fixed
