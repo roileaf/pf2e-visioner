@@ -1,5 +1,11 @@
 # Changelog
 
+## [8.14.12] - 2026-10-23
+
+### Added
+
+- **Animater's spell lights only reveal creatures when the table opts in.** Animater 2.0.3 lights a dark room when a spell like Fireball glows. AVS now counts that light only when Animater's homebrew **Effect light reveals creatures** setting is on; off (its default), the spell lights the scene without making the creatures in it visible. Animater marks each of its lights with `revealsCreatures`, and AVS skips any light that says `false`.
+
 ## [8.14.11] - 2026-10-23
 
 ### Fixed
