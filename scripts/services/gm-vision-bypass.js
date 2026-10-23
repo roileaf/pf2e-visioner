@@ -36,7 +36,14 @@ function readGmVisionSetting() {
   return null;
 }
 
+function systemCachedGmVision() {
+  const cached = globalThis.game?.[getSystemId()]?.settings?.gmVision;
+  return typeof cached === 'boolean' ? cached : null;
+}
+
 function gmVisionSettingEnabled() {
+  const cached = systemCachedGmVision();
+  if (cached !== null) return cached;
   const frame = currentRenderFrameStamp();
   if (frame === null) return readGmVisionSetting();
   if (frame !== gmVisionSettingFrame) {
