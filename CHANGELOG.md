@@ -1,5 +1,11 @@
 # Changelog
 
+## [8.14.14] - 2026-10-25
+
+### Fixed
+
+- **Out-of-combat visibility falls back to PF2e again.** With **AVS only in combat** on, Visioner skipped PF2e's own detection rules outside combat. In a dark room, a token without darkvision then "heard" every creature, even though PF2e treats creatures as silent outside combat, so everyone became visible. PF2e's checks (sound, conditions such as Hidden/Undetected, Blinded/Deafened) now apply again whenever AVS is paused outside combat. Scenes with Token Vision off are unchanged.
+
 ## [8.14.13] - 2026-10-23
 
 ### Fixed

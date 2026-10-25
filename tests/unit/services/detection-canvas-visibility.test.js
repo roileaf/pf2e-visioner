@@ -579,10 +579,10 @@ describe('canvas visibility wrapper', () => {
         object: target,
         tests: [{ x: 0, y: 0 }],
       }),
-    ).toBe(true);
+    ).toBe(false);
     expect(target.document.getFlag).not.toHaveBeenCalled();
-    expect(detectionMode._canDetect).not.toHaveBeenCalled();
-    expect(detectionMode._testPoint).toHaveBeenCalledTimes(1);
+    expect(detectionMode._canDetect).toHaveBeenCalledTimes(1);
+    expect(detectionMode._testPoint).not.toHaveBeenCalled();
 
     global.game.settings.set('pf2e-visioner', 'avsOnlyInCombat', false);
   });
