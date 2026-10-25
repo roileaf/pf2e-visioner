@@ -399,6 +399,7 @@ export async function updateSystemHiddenTokenHighlights(
           isSoundBlocked: (observerToken, targetToken) =>
             VisionAnalyzer.getInstance().isSoundBlocked(observerToken, targetToken),
           canLifesenseDetect: visibilityCalculatorInternal.canLifesenseDetect,
+          canApparitionSenseDetect: visibilityCalculatorInternal.canApparitionSenseDetect,
           canThoughtsenseDetect: visibilityCalculatorInternal.canThoughtsenseDetect,
         });
       const existingIndicator = token._pvSystemHiddenIndicator;

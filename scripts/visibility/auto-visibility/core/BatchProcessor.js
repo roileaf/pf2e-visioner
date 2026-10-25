@@ -13,6 +13,11 @@ import { yieldToBrowser } from '../../../utils/yield-to-browser.js';
 import { GlobalLosCache } from '../utils/GlobalLosCache.js';
 import { GlobalVisibilityCache } from '../utils/GlobalVisibilityCache.js';
 import { VisionAnalyzer } from '../VisionAnalyzer.js';
+import {
+  APPARITION_SENSE,
+  APPARITION_SENSE_RANGE,
+  canApparitionSenseDetect,
+} from '../../apparition-sense.js';
 import { BatchDirectionalLosResolver } from './BatchDirectionalLosResolver.js';
 import { BatchDirectionalVisibilityResolver } from './BatchDirectionalVisibilityResolver.js';
 import { HashGridIndex } from './HashGridIndex.js';
@@ -58,6 +63,7 @@ const VISUAL_SENSE_TYPES = new Set([
 ]);
 const NON_VISUAL_SENSE_DEFAULT_RANGES = {
   lifesense: 10,
+  [APPARITION_SENSE]: APPARITION_SENSE_RANGE,
   thoughtsense: 30,
   scent: 30,
   echolocation: 40,
@@ -104,6 +110,10 @@ function canLifesenseReachTarget(target) {
   return !traits.includes('construct');
 }
 
+function canApparitionSenseReachTarget(target) {
+  return canApparitionSenseDetect({ traits: getActorTraits(target) });
+}
+
 function canThoughtsenseReachTarget(target) {
   const traits = getActorTraits(target);
   return !traits.includes('mindless') && !traits.includes('construct') && !traits.includes('ooze');
@@ -122,6 +132,7 @@ function canSpecialSenseBypassLineOfSight(sense, target, distanceInFeet, isDeafe
 
   if (senseType === 'echolocation' || senseType === 'hearing') return !isDeafened;
   if (senseType === 'lifesense') return canLifesenseReachTarget(target);
+  if (senseType === APPARITION_SENSE) return canApparitionSenseReachTarget(target);
   if (senseType === 'thoughtsense') return canThoughtsenseReachTarget(target);
 
   return true;

@@ -38,6 +38,7 @@ export const SenseType = {
   HEARING: 'hearing',
   TREMORSENSE: 'tremorsense',
   LIFESENSE: 'lifesense',
+  APPARITION_SENSE: 'apparition-sense',
   THOUGHTSENSE: 'thoughtsense',
   SCENT: 'scent',
   ECHOLOCATION: 'echolocation',
@@ -260,6 +261,18 @@ export const SPECIAL_SENSES = {
     detectsConstructs: false, // No life force or void energy
     canDistinguish: true, // Can tell the difference between living and undead
     icon: 'fas fa-heartbeat',
+    hasRangeLimit: true,
+  },
+  'apparition-sense': {
+    label: 'PF2E_VISIONER.SPECIAL_SENSES.apparition_sense',
+    description: 'PF2E_VISIONER.SPECIAL_SENSES.apparition_sense_description',
+    type: 'imprecise',
+    defaultRange: 30,
+    detectsLiving: false,
+    detectsUndead: true,
+    detectsConstructs: false,
+    canDistinguish: false,
+    icon: 'fas fa-ghost',
     hasRangeLimit: true,
   },
   thoughtsense: {

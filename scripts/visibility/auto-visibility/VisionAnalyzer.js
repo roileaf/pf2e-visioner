@@ -19,6 +19,11 @@
  */
 
 import { MODULE_ID } from '../../constants.js';
+import {
+  APPARITION_SENSE,
+  canApparitionSenseDetect,
+  getApparitionSenseFromFeats,
+} from '../apparition-sense.js';
 import { calculateDistanceInFeet } from '../../helpers/geometry-utils.js';
 import { getTokenVerticalSpanFt } from '../../helpers/size-elevation-utils.js';
 import { doesWallSenseBlockFromPoint } from '../../helpers/wall-sense-utils.js';
@@ -1823,6 +1828,12 @@ export class VisionAnalyzer {
       const creatureType = actor.system?.details?.creatureType || actor.type;
       const traits = actor.system?.traits?.value || actor.system?.details?.traits?.value || [];
 
+      if (senseType === APPARITION_SENSE) {
+        return canApparitionSenseDetect({
+          traits: traits.map((trait) => (typeof trait === 'string' ? trait : trait?.value)),
+        });
+      }
+
       // Check if this sense can detect constructs
       if (!senseConfig.detectsConstructs) {
         if (creatureType === 'construct') return false;
@@ -1979,7 +1990,16 @@ export class VisionAnalyzer {
       this.#applySceneHearingRange(enhanced);
     }
 
+    this.#applyApparitionSense(enhanced, actor);
+
     return enhanced;
+  }
+
+  #applyApparitionSense(sensing, actor) {
+    if (sensing.precise[APPARITION_SENSE] !== undefined) return;
+    if (sensing.imprecise[APPARITION_SENSE] !== undefined) return;
+    const sense = getApparitionSenseFromFeats(actor);
+    if (sense) sensing.imprecise[APPARITION_SENSE] = sense.range;
   }
 
   #applySceneHearingRange(sensing) {

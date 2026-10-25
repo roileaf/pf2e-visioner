@@ -10,6 +10,7 @@
 import { LightingLevel, SenseType, VisibilityState, SPECIAL_SENSES } from '../constants.js';
 import { getLogger } from '../utils/logger.js';
 import { legacyVisibilityToProfile } from './perception-profile.js';
+import { canApparitionSenseDetect } from './apparition-sense.js';
 const log = getLogger('AVS/StatelessCalculator');
 
 const VISUAL_SENSE_TYPES = new Set([
@@ -382,6 +383,19 @@ function checkNonAuditorySenses(
     };
   }
 
+  if (
+    imprecise[SenseType.APPARITION_SENSE] &&
+    canApparitionSenseReachTarget(target, { hasLineOfSight, soundBlocked })
+  ) {
+    return {
+      state: VisibilityState.HIDDEN,
+      detection: {
+        isPrecise: false,
+        sense: SenseType.APPARITION_SENSE,
+      },
+    };
+  }
+
   return null;
 }
 
@@ -404,6 +418,13 @@ function canLifesenseReachTarget(
   { hasLineOfSight = undefined, soundBlocked = false } = {},
 ) {
   return canLifesenseDetect(target) && hasLineOfSight !== false && soundBlocked !== true;
+}
+
+function canApparitionSenseReachTarget(
+  target,
+  { hasLineOfSight = undefined, soundBlocked = false } = {},
+) {
+  return canApparitionSenseDetect(target) && hasLineOfSight !== false && soundBlocked !== true;
 }
 
 /**
@@ -568,6 +589,22 @@ function checkPreciseNonVisualSenses(
           detection: {
             isPrecise: true,
             sense: SenseType.LIFESENSE,
+          },
+        };
+      }
+      continue;
+    }
+
+    if (senseType === SenseType.APPARITION_SENSE) {
+      if (
+        hasPositiveSenseRange(senseData) &&
+        canApparitionSenseReachTarget(target, { hasLineOfSight, soundBlocked })
+      ) {
+        return {
+          state: VisibilityState.OBSERVED,
+          detection: {
+            isPrecise: true,
+            sense: SenseType.APPARITION_SENSE,
           },
         };
       }
@@ -930,6 +967,20 @@ function checkImpreciseSenses(
     });
   }
 
+  if (
+    imprecise[SenseType.APPARITION_SENSE] &&
+    canApparitionSenseReachTarget(target, { hasLineOfSight, soundBlocked })
+  ) {
+    workingSenses.push({
+      priority: 2,
+      state: VisibilityState.HIDDEN,
+      detection: {
+        isPrecise: false,
+        sense: SenseType.APPARITION_SENSE,
+      },
+    });
+  }
+
   if (imprecise.thoughtsense && canThoughtsenseDetect(target)) {
     workingSenses.push({
       priority: 2,
@@ -1096,6 +1147,8 @@ export const _internal = {
   resolveInvisibilityFromPreviousState,
   canLifesenseDetect,
   canLifesenseReachTarget,
+  canApparitionSenseDetect,
+  canApparitionSenseReachTarget,
   canThoughtsenseDetect,
   selectBestDetection,
 };

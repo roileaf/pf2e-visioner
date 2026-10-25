@@ -3,6 +3,7 @@ import { markTooltipBadgeElement } from './hover-tooltip-badge-hover.js';
 export const TOOLTIP_SENSE_ICONS = {
   tremorsense: 'fa-solid fa-tower-broadcast',
   lifesense: 'fa-solid fa-heartbeat',
+  'apparition-sense': 'fa-solid fa-ghost',
   thoughtsense: 'fa-solid fa-brain',
   scent: 'fa-solid fa-nose',
   hearing: 'fa-solid fa-ear-listen',

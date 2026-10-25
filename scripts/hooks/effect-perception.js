@@ -44,6 +44,7 @@ const VISIBILITY_AFFECTING_EFFECTS = [
   'scent',
   'thoughtsense',
   'lifesense',
+  'apparition sense',
   'echolocation',
 
   // PF2e specific effects

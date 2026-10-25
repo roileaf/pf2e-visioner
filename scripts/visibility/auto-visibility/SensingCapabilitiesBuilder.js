@@ -51,6 +51,10 @@ const SENSE_TYPE_ALIASES = {
     'lifesense': 'lifesense',
     'life-sense': 'lifesense',
 
+    'apparition-sense': 'apparition-sense',
+    'apparition-sight': 'apparition-sense',
+    'apparitionsense': 'apparition-sense',
+
     'electromagnetic-sense': 'electromagnetic-sense',
     'electromagneticsense': 'electromagnetic-sense',
     'electromagnetic': 'electromagnetic-sense',

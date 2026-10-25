@@ -1,5 +1,11 @@
 # Changelog
 
+## [8.14.15] - 2026-10-25
+
+### Added
+
+- **Apparition Sense (Animist feat).** A character with the Apparition Sense feat now has apparition sight, an imprecise 30-foot sense. It detects invisible or hidden spirits, haunts and undead (creatures with the spirit, undead or haunt trait) as Hidden, never Observed. Like lifesense, it needs a clear line of sight and an open sound path. It shows the presence marker on targets it detects, appears in the Seek dialog and hover tooltips, and ignores living creatures and constructs. Haunts that are hazard actors are still outside AVS, as all hazards are.
+
 ## [8.14.14] - 2026-10-25
 
 ### Fixed

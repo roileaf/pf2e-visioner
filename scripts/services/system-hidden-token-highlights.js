@@ -1,6 +1,7 @@
 import { isScentBlocked as defaultIsScentBlocked } from '../helpers/scent-wall-utils.js';
 import { SenseSuppressionRegionBehavior } from '../regions/SenseSuppressionRegionBehavior.js';
 import { hasActivePresenceOnlyTokenRenderSuppression } from './system-hidden-presence-only-suppression.js';
+import { APPARITION_SENSE, getApparitionSenseFromFeats } from '../visibility/apparition-sense.js';
 
 function hasPositionChange(changes) {
   return !!changes && ('x' in changes || 'y' in changes);
@@ -68,9 +69,17 @@ export function buildControlledTokenHighlightRequests(controlledTokens) {
     .filter(Boolean);
 }
 
+function getApparitionSenseEntry(observerSenses, observer) {
+  return (
+    observerSenses.find?.((sense) => sense.type === APPARITION_SENSE) ??
+    getApparitionSenseFromFeats(observer?.actor)
+  );
+}
+
 export function getSystemHiddenSenseContext(observer) {
   const observerSenses = getObserverPerceptionSenses(observer);
   const lifesenseSense = observerSenses.find?.((sense) => sense.type === 'lifesense') ?? null;
+  const apparitionSenseSense = getApparitionSenseEntry(observerSenses, observer);
   const thoughtsenseSense = observerSenses.find?.((sense) => sense.type === 'thoughtsense') ?? null;
   const echolocationSense = observerSenses.find?.((sense) => sense.type === 'echolocation') ?? null;
   const scentSense = observerSenses.find?.((sense) => sense.type === 'scent') ?? null;
@@ -79,10 +88,12 @@ export function getSystemHiddenSenseContext(observer) {
 
   return {
     lifesenseSense,
+    apparitionSenseSense,
     thoughtsenseSense,
     echolocationSense,
     scentSense,
     observerHasLifesense: !!lifesenseSense,
+    observerHasApparitionSense: !!apparitionSenseSense,
     lifesenseIsPrecise: lifesenseSense?.acuity === 'precise',
     observerHasThoughtsense: !!thoughtsenseSense,
     observerHasEcholocation: !!echolocationSense,
@@ -95,6 +106,7 @@ export function getSystemHiddenSenseContext(observer) {
 export function shouldEvaluateSystemHiddenIndicators(senseContext) {
   return (
     !!senseContext?.observerHasLifesense ||
+    !!senseContext?.observerHasApparitionSense ||
     !!senseContext?.observerHasThoughtsense ||
     !!senseContext?.observerHasEcholocation ||
     !!senseContext?.observerHasScent
@@ -218,6 +230,7 @@ export function buildSystemHiddenIndicatorDecision({
   isSoundBlocked = null,
   isScentBlocked = defaultIsScentBlocked,
   canLifesenseDetect = () => false,
+  canApparitionSenseDetect = () => false,
   canThoughtsenseDetect = () => false,
   canScentDetect = () => true,
 } = {}) {
@@ -242,6 +255,8 @@ export function buildSystemHiddenIndicatorDecision({
     ...senseContext,
     observerHasScent: senseContext?.observerHasScent && !suppressed.has('scent'),
     observerHasLifesense: senseContext?.observerHasLifesense && !suppressed.has('lifesense'),
+    observerHasApparitionSense:
+      senseContext?.observerHasApparitionSense && !suppressed.has(APPARITION_SENSE),
     observerHasThoughtsense: senseContext?.observerHasThoughtsense && !suppressed.has('thoughtsense'),
     observerHasEcholocation: senseContext?.observerHasEcholocation && !suppressed.has('echolocation'),
   };
@@ -265,13 +280,17 @@ export function buildSystemHiddenIndicatorDecision({
   const targetTraits = token?.actor?.system?.traits?.value || [];
   const distanceInFeet = getSystemHiddenTokenDistance(observer, token, positionOverride, grid);
   const lifesenseRange = senseContext?.lifesenseSense?.range ?? 0;
+  const apparitionSenseRange = senseContext?.apparitionSenseSense?.range ?? 0;
   const thoughtsenseRange = senseContext?.thoughtsenseSense?.range ?? 0;
   const echolocationRange = senseContext?.echolocationSense?.range ?? 0;
   const scentRange = senseContext?.scentSense?.range ?? 0;
   const canBeDetectedByLifesense = canLifesenseDetect({ traits: targetTraits });
+  const canBeDetectedByApparitionSense = canApparitionSenseDetect({ traits: targetTraits });
   const canBeDetectedByThoughtsense = canThoughtsenseDetect({ traits: targetTraits });
   const canBeDetectedByScent = canScentDetect({ traits: targetTraits });
   const isWithinLifesenseRange = lifesenseRange === Infinity || distanceInFeet <= lifesenseRange;
+  const isWithinApparitionSenseRange =
+    apparitionSenseRange === Infinity || distanceInFeet <= apparitionSenseRange;
   const isWithinThoughtsenseRange =
     thoughtsenseRange === Infinity || distanceInFeet <= thoughtsenseRange;
   const isWithinEcholocationRange =
@@ -290,6 +309,12 @@ export function buildSystemHiddenIndicatorDecision({
     !!senseContext?.observerHasLifesense &&
     canBeDetectedByLifesense &&
     isWithinLifesenseRange;
+  const shouldShowApparitionSenseIndicator =
+    mayShowSystemHiddenIndicator &&
+    (isSystemHidden || (isHiddenFromObserver && detection?.sense === APPARITION_SENSE)) &&
+    !!senseContext?.observerHasApparitionSense &&
+    canBeDetectedByApparitionSense &&
+    isWithinApparitionSenseRange;
   const shouldShowScentIndicator =
     mayShowSystemHiddenIndicator &&
     (isSystemHidden || (isHiddenFromObserver && detection?.sense === 'scent')) &&
@@ -318,6 +343,7 @@ export function buildSystemHiddenIndicatorDecision({
   const shouldShowBlindDeafIndicator = false;
   const shouldShowIndicator =
     shouldShowLifesenseIndicator ||
+    shouldShowApparitionSenseIndicator ||
     shouldShowScentIndicator ||
     shouldShowThoughtsenseIndicator ||
     shouldShowEcholocationIndicator ||
@@ -330,13 +356,16 @@ export function buildSystemHiddenIndicatorDecision({
         ? 'echolocation'
         : shouldShowScentIndicator
           ? 'scent'
-          : 'lifesense';
+          : shouldShowApparitionSenseIndicator && !shouldShowLifesenseIndicator
+            ? APPARITION_SENSE
+            : 'lifesense';
 
   return {
     shouldShowIndicator,
     indicatorMode,
     detectionSense: detection?.sense ?? null,
     shouldShowLifesenseIndicator,
+    shouldShowApparitionSenseIndicator,
     shouldShowScentIndicator,
     shouldShowThoughtsenseIndicator,
     shouldShowEcholocationIndicator,

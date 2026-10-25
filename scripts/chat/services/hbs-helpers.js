@@ -161,6 +161,7 @@ try {
     const iconMap = {
       'tremorsense': 'fa-solid fa-tower-broadcast',
       'lifesense': 'fa-solid fa-heartbeat',
+      'apparition-sense': 'fa-solid fa-ghost',
       'scent': 'fa-solid fa-wind',
       'hearing': 'fa-solid fa-ear-listen',
       'greater-darkvision': 'fa-solid fa-moon',

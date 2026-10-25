@@ -17,6 +17,7 @@
  */
 
 import { SenseSuppressionRegionBehavior } from '../../regions/SenseSuppressionRegionBehavior.js';
+import { APPARITION_SENSE, canApparitionSenseDetect } from '../apparition-sense.js';
 import {
     calculateHearingDistanceInFeet,
     createDefaultHearingSense,
@@ -359,6 +360,10 @@ export class SeekDialogAdapter {
             const creatureType = actor.system?.details?.creatureType || actor.type;
             const traits = actor.system?.traits?.value || actor.system?.details?.traits?.value || [];
 
+            if (senseType === APPARITION_SENSE) {
+                return this.#checkApparitionSenseLimitation(traits);
+            }
+
             // Check construct limitation
             if (!senseConfig.detectsConstructs) {
                 const isConstruct = creatureType === 'construct' ||
@@ -390,6 +395,12 @@ export class SeekDialogAdapter {
             console.warn('Error checking sense limitations:', error);
             return { valid: true }; // Fail open
         }
+    }
+
+    #checkApparitionSenseLimitation(traits) {
+        if (canApparitionSenseDetect({ traits })) return { valid: true };
+        const key = 'PF2E_VISIONER.SPECIAL_SENSES.apparition_sense_limitation';
+        return { valid: false, reason: game.i18n?.localize?.(key) ?? key };
     }
 
     /**

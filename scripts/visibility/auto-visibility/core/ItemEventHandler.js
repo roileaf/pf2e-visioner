@@ -239,6 +239,7 @@ export class ItemEventHandler {
       itemName.includes('scent') ||
       itemName.includes('thoughtsense') ||
       itemName.includes('lifesense') ||
+      itemName.includes('apparition sense') ||
       itemName.includes('deaf');
 
     // DISABLED: Light-emitting items should be handled by LightingEventHandler via lightingRefresh

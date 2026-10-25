@@ -4,6 +4,7 @@ import { getVisibilityOverrideFactor } from './rule-elements/visibility-override
  */
 
 import { MODULE_ID } from './constants.js';
+import { APPARITION_SENSE, canApparitionSenseDetect } from './visibility/apparition-sense.js';
 import autoCoverSystem from './cover/auto-cover/AutoCoverSystem.js';
 import { COVER_ADJUSTMENT_MODES } from './cover/cover-adjustments.js';
 import { scheduleCanvasPerceptionUpdate } from './helpers/perception-refresh.js';
@@ -723,6 +724,13 @@ export class Pf2eVisionerApi {
         detection.lifesense = inRange && isLivingOrUndead;
       }
 
+      const apparitionSenseRange =
+        visionCaps.imprecise?.[APPARITION_SENSE] ?? visionCaps.precise?.[APPARITION_SENSE] ?? 0;
+      detection.apparitionSense =
+        apparitionSenseRange > 0 &&
+        distance <= apparitionSenseRange &&
+        canApparitionSenseDetect({ traits: targetToken.actor?.system?.traits?.value || [] });
+
       const hasTremorsense = visionCaps.sensingSummary?.tremorsense?.range > 0;
       if (hasTremorsense) {
         const observerMovementAction = observerToken.document.movementAction;
@@ -1269,6 +1277,15 @@ export class Pf2eVisionerApi {
         slugs.push('lifesense');
       }
 
+      if (detection.apparitionSense) {
+        reasons.push(
+          game.i18n.format('PF2E_VISIONER.VISIBILITY_FACTORS.REASONS.DETECTED_BY_APPARITION_SENSE', {
+            acuity: getSenseAcuity(APPARITION_SENSE),
+          }),
+        );
+        slugs.push(APPARITION_SENSE);
+      }
+
       // Thoughtsense detection
       if (detection.thoughtsense) {
         const acuity = getSenseAcuity('thoughtsense');
@@ -1304,6 +1321,7 @@ export class Pf2eVisionerApi {
               'low-light-vision',
               'greater-darkvision',
               'lifesense',
+              APPARITION_SENSE,
               'tremorsense',
               'thoughtsense',
             ].includes(senseType)

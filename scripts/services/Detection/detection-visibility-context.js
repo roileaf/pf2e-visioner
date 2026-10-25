@@ -27,6 +27,7 @@ export const NON_VISUAL_DETECTION_MODE_IDS = new Set([
   'tremorsense',
   'scent',
   'lifesense',
+  'apparition-sense',
   'thoughtsense',
 ]);
 

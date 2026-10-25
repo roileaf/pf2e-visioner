@@ -766,6 +766,7 @@ function attachPulseAnimation({
       if (
         indicator._pvIndicatorMode === 'thoughtsense' ||
         indicator._pvIndicatorMode === 'lifesense' ||
+        indicator._pvIndicatorMode === 'apparition-sense' ||
         indicator._pvIndicatorMode === 'scent'
       ) {
         hidePresenceOnlyIndicatorTokenDetails(token, { indicator });

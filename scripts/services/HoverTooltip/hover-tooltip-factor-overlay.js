@@ -11,6 +11,8 @@ export const DETECTION_FACTOR_KEYWORDS = [
   'low-light',
   'lifesense',
   'Lifesense',
+  'apparition',
+  'Apparition',
   'thoughtsense',
   'Thoughtsense',
   'tremorsense',
