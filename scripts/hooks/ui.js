@@ -1931,7 +1931,7 @@ function injectPF2eVisionerBox(app, root) {
         ${
           visionMasterTokenId
             ? `
-          <div style="margin-top: 8px;">
+          <div class="pv-vision-mode-dropdown-container" style="margin-top: 8px;">
             <label style="font-size: 0.9em; margin-bottom: 4px; display: block;">${game.i18n.localize('PF2E_VISIONER.VISION_MASTER_DIALOG.MODE_LABEL')}</label>
             <select name="flags.${MODULE_ID}.visionSharingMode" class="pv-vision-mode-select" style="width: 100%;">
               <option value="one-way" ${visionSharingMode === 'one-way' ? 'selected' : ''}>${modeLabels['one-way']}</option>

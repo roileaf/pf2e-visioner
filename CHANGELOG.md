@@ -1,5 +1,11 @@
 # Changelog
 
+## [8.14.16] - 2026-10-27
+
+### Fixed
+
+- **Vision Sharing Mode dropdown no longer duplicates.** In Token Config, picking a Vision Master again added a second Sharing Mode dropdown, and clearing the master left one behind. Picking or clearing a master now updates the single existing dropdown, so Update Token saves one mode value.
+
 ## [8.14.15] - 2026-10-25
 
 ### Added
