@@ -244,7 +244,18 @@ async function runAgainstObserver({
   const final = settledStates(observerId, targetIds);
   const { totalFlashes, totalStateBlips, totalMismatches } = totals(steps);
   const pass = totalMismatches === 0 && !settledMismatches(observerId, targetIds).length;
-  return { pass, totalMismatches, totalFlashes, totalStateBlips, watched, baseline, final, steps };
+  const observerInfo = { tokenId: observerId, name: observer.name, actorId: observer.actor?.id };
+  return {
+    pass,
+    observer: observerInfo,
+    totalMismatches,
+    totalFlashes,
+    totalStateBlips,
+    watched,
+    baseline,
+    final,
+    steps,
+  };
 }
 
 export async function runElevationTorchSoundwaveTest({
