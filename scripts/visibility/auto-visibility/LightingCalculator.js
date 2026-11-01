@@ -9,6 +9,19 @@ import { getLogger } from '../../utils/logger.js';
 import { LightingModifier } from '../../rule-elements/operations/LightingModifier.js';
 const log = getLogger('LightingCalculator');
 
+function distancePixels() {
+  const fromDimensions = Number(canvas.dimensions?.distancePixels);
+  if (Number.isFinite(fromDimensions) && fromDimensions > 0) return fromDimensions;
+  return (canvas.grid?.size || 100) / (canvas.scene?.grid?.distance || 5);
+}
+
+function lightVerticalGapPixels(light, elevation) {
+  if (Number(light.data?.priority) > 0) return 0;
+  const lightElevation = Number(light.data?.elevation);
+  if (!Number.isFinite(lightElevation)) return 0;
+  return Math.abs(elevation - lightElevation) * distancePixels();
+}
+
 export class LightingCalculator {
   /** @type {LightingCalculator} */
   static #instance = null;
@@ -253,6 +266,8 @@ export class LightingCalculator {
       // A passing effect light that says it reveals nothing (Animater's spell light, unless its homebrew
       // "Effect light reveals creatures" setting is on) lights the scene but not the creatures in it.
       if (light.revealsCreatures === false) continue;
+      const verticalGap = lightVerticalGapPixels(light, elevation);
+      if (verticalGap > Math.max(light.data.dim, light.data.bright) + 1e-8) continue;
 
       // Do a cheap distance check to skip obviously out-of-range sources
       // We nudge out the radius a bit to not reject partially illuminated tokens
@@ -269,7 +284,9 @@ export class LightingCalculator {
       // See if we are in the bright area of the light
       const brightRadiusSquared = light.data.bright * light.data.bright;
 
-      if (distanceSquared < brightRadiusSquared) return makeIlluminationResult(BRIGHT);
+      if (distanceSquared < brightRadiusSquared && verticalGap <= light.data.bright) {
+        return makeIlluminationResult(BRIGHT);
+      }
       illumination = Math.max(illumination, DIM);
     }
 

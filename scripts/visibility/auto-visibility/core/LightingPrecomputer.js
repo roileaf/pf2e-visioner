@@ -232,7 +232,7 @@ export class LightingPrecomputer {
                         heightened = light.getFlag?.(MODULE_ID, 'heightenedDarkness') ? 1 : 0;
                         rank = Number(light.getFlag?.(MODULE_ID, 'darknessRank') ?? 0) || 0;
                     } catch { /* ignore flag access issues */ }
-                    lightHash += `${light.id}:${light.x}:${light.y}:${light.disabled ? 0 : 1}:${config.bright || 0}:${config.dim || 0}:${negative}:${heightened}:${rank}|`;
+                    lightHash += `${light.id}:${light.x}:${light.y}:${light.elevation || 0}:${light.disabled ? 0 : 1}:${config.bright || 0}:${config.dim || 0}:${negative}:${heightened}:${rank}|`;
                 }
                 parts.push(`lights:${lightHash}`);
             } else {
@@ -267,7 +267,7 @@ export class LightingPrecomputer {
                         const tokenRotation = token.document.rotation || 0;
 
 
-                        tokenLightHash += `${token.id}:${token.x}:${token.y}:${lightConfig.bright || 0}:${lightConfig.dim || 0}:${angle}:${lightRotation}:${tokenRotation}|`;
+                        tokenLightHash += `${token.id}:${token.x}:${token.y}:${token.document.elevation || 0}:${lightConfig.bright || 0}:${lightConfig.dim || 0}:${angle}:${lightRotation}:${tokenRotation}|`;
                     }
                     const tokenLightPart = `tokenLights:${tokenLightHash}`;
                     parts.push(tokenLightPart);

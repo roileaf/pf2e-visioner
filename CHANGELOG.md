@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- **Raising a torch-bearer high no longer flashes soundwaves on observed creatures.** Visioner treated a light as reaching the ground no matter how high its source was, while Foundry stops a light once the height gap exceeds its radius. Creatures below a raised torch stayed observed in Visioner but were drawn as soundwaves. Lights now reach only as far up or down as their radius (bright light only within the bright radius, magical lights still reach every elevation), and a light changing elevation now refreshes lighting.
+
 ## [8.14.16] - 2026-10-27
 
 ### Fixed

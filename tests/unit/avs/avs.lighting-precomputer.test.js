@@ -62,6 +62,34 @@ describe('LightingPrecomputer', () => {
         LC.LightingCalculator.getInstance = originalGetInstance;
     });
 
+    test('recomputes lighting when a light-carrying token only changes elevation', async () => {
+        const mockLC = { getLightLevelAt: jest.fn((pos, tok) => ({ level: 'bright', token: tok?.document?.id })) };
+        const LC = await import('../../../scripts/visibility/auto-visibility/LightingCalculator.js');
+        const originalGetInstance = LC.LightingCalculator.getInstance;
+        LC.LightingCalculator.getInstance = () => mockLC;
+        const { LightingPrecomputer } = await import('../../../scripts/visibility/auto-visibility/core/LightingPrecomputer.js');
+        const torchBearer = createMockToken({ id: 'torch', x: 10, y: 10, elevation: 0 });
+        torchBearer.document.light = { bright: 20, dim: 40 };
+        const target = createMockToken({ id: 'target', x: 60, y: 10, elevation: 0 });
+        const originalPlaceables = canvas.tokens.placeables;
+        canvas.tokens.placeables = [torchBearer, target];
+        let now = 1_000_000;
+        const clock = jest.spyOn(Date, 'now').mockImplementation(() => now);
+        try {
+            LightingPrecomputer.clearLightingCaches();
+            const first = await LightingPrecomputer.precompute([target]);
+            now += 1000;
+            torchBearer.document.elevation = 70;
+            mockLC.getLightLevelAt.mockClear();
+            await LightingPrecomputer.precompute([target], undefined, first);
+            expect(mockLC.getLightLevelAt).toHaveBeenCalledTimes(1);
+        } finally {
+            clock.mockRestore();
+            canvas.tokens.placeables = originalPlaceables;
+            LC.LightingCalculator.getInstance = originalGetInstance;
+        }
+    });
+
     test('consumes forced fresh lighting after one successful recompute', async () => {
         const mockLC = {
             getLightLevelAt: jest.fn((pos, tok) => ({ level: 'bright', token: tok?.document?.id })),
