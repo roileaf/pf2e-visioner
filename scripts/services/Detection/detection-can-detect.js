@@ -15,7 +15,7 @@ import { isSelectAllTokenVisibilityBypassActive } from './select-all-token-visib
 import { isPartyActorToken } from '../../utils/token-actor.js';
 import { isNativeVisibilityProbe } from './native-visibility-probe.js';
 import { isTokenSightBlockedByLedge } from '../../cover/ledge/ledge-vision.js';
-import { liveImpreciseSenseDuringMove } from './during-move-live-hearing.js';
+import { liveImpreciseSenseDuringMove, liveSenseKeepsStoredHidden } from './during-move-live-hearing.js';
 
 export function createCanDetectVisibilityWrapper(threshold) {
   return function wrapCanDetectVisibility(wrapped, visionSource, target, ...args) {
@@ -117,7 +117,7 @@ function liveSenseRevealsUndetected(observer, target, visibility, modeId) {
 
 function liveSenseKeepsHidden(observer, target, modeId) {
   if (!isKnownNonVisualMode(modeId) || hasHiddenAvsOverride(observer, target)) return true;
-  return liveImpreciseSenseDuringMove(observer, target) !== false;
+  return liveSenseKeepsStoredHidden(observer, target);
 }
 
 function canUseVisionerHiddenDetection(

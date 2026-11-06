@@ -20,6 +20,18 @@ const notSensed = () => false;
 const sensed = () => true;
 
 describe('targetShouldShowSoundwave (during-move live decision)', () => {
+  test('a stored-hidden invisible target keeps its soundwave when no sense reaches it live', () => {
+    const invisible = { ...target, actor: { conditions: [{ slug: 'invisible' }] } };
+    const noLiveSense = () => false;
+    expect(targetShouldShowSoundwave(invisible, [observer(false)], getVisibility('hidden'), () => false, notSensed, noLiveSense)).toBe(true);
+  });
+
+  test('a stored-undetected invisible target shows no soundwave when no sense reaches it live', () => {
+    const invisible = { ...target, actor: { conditions: [{ slug: 'invisible' }] } };
+    const noLiveSense = () => false;
+    expect(targetShouldShowSoundwave(invisible, [observer(false)], getVisibility('undetected'), () => false, notSensed, noLiveSense)).toBe(false);
+  });
+
   test('no soundwave when an observer sees the target (in sight)', () => {
     expect(targetShouldShowSoundwave(target, [observer(true)], getVisibility('observed'))).toBe(
       false,
@@ -543,6 +555,20 @@ describe('refreshSoundwavesForActiveMovement (only mutates during a committed mo
       isSoundBlocked: () => blocked,
     } });
     expect(mod.impreciselySensedOutOfSight({}, {})).toBe(expected);
+  });
+
+  test.each([
+    { imprecise: { hearing: Infinity }, expected: false },
+    { imprecise: { hearing: Infinity, tremorsense: 60 }, expected: true },
+  ])('hearing alone never senses an invisible target while it moves: %j', async ({ imprecise, expected }) => {
+    const mod = await loadWith({ pendingMovement: true, visionAnalyzer: {
+      distanceFeet: () => 10,
+      getSensingCapabilities: () => ({ precise: { vision: Infinity }, imprecise }),
+      getVisionCapabilities: () => ({ isDeafened: false }),
+      isSoundBlocked: () => false,
+    } });
+    const invisibleTarget = { actor: { conditions: [{ slug: 'invisible' }] }, document: { flags: {} } };
+    expect(mod.impreciselySensedOutOfSight({}, invisibleTarget)).toBe(expected);
   });
 
   test('rechecks hearing when a wall begins blocking during the same move', async () => {

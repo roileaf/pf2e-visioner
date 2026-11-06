@@ -23,7 +23,9 @@ import { releaseDetectionFilterMesh, suppressDetectionFilterMesh } from './Detec
 import { hasGmObserverHiddenPresentation } from './GmObserverView/gm-observer-view.js';
 import {
   liveImpreciseSenseDuringMove,
+  liveSenseKeepsStoredHidden,
   setLiveImpreciseSenseProbe,
+  targetIsInvisible,
 } from './Detection/during-move-live-hearing.js';
 
 let running = false;
@@ -150,6 +152,7 @@ export function impreciselySensedOutOfSight(observer, target) {
   try {
     const analyzer = VisionAnalyzer.getInstance?.();
     if (!analyzer) return false;
+    const invisible = targetIsInvisible(target);
     const distance = analyzer.distanceFeet(observer, target);
     const inRange = (senseData) => {
       const range = senseData && typeof senseData === 'object' ? senseData.range : senseData;
@@ -164,6 +167,7 @@ export function impreciselySensedOutOfSight(observer, target) {
     // An imprecise sense in range (tremorsense, scent) means the target is sensed = hidden.
     for (const [senseType, senseData] of Object.entries(capabilities.imprecise || {})) {
       if (!inRange(senseData)) continue;
+      if (senseType === 'hearing' && invisible) continue;
       if (senseType === 'hearing' && analyzer.isSoundBlocked(observer, target)) continue;
       return true;
     }
@@ -223,8 +227,7 @@ function stillSensedForStoredHidden(target, observers) {
   return observers.some(
     (observer) =>
       observer !== target &&
-      (hasHiddenAvsOverride(observer, target) ||
-        liveImpreciseSenseDuringMove(observer, target) !== false),
+      (hasHiddenAvsOverride(observer, target) || liveSenseKeepsStoredHidden(observer, target)),
   );
 }
 
@@ -255,7 +258,7 @@ export function targetShouldShowSoundwave(
 }
 
 function storedStateSensedOutOfSight(visibility, observer, target, impreciselySensed, liveSense) {
-  if (visibility === 'hidden') return liveSense(observer, target) !== false;
+  if (visibility === 'hidden') return targetIsInvisible(target) || liveSense(observer, target) !== false;
   if (visibility === 'undetected') {
     return !hasUndetectedAvsOverride(observer, target) && liveSense(observer, target) === true;
   }

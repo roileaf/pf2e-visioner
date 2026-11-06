@@ -136,6 +136,12 @@ describe('core hearing during a committed move follows the live sense', () => {
     expect(hear(wrapper, token('observer'), npc(), true)).toBe(false);
   });
 
+  test('a stored-Hidden invisible target stays detected without a live sense', async () => {
+    const wrapper = await loadCanDetect({ visibility: 'hidden', liveSense: false });
+    const invisible = { ...token('target'), actor: { type: 'npc', conditions: [{ slug: 'invisible' }] } };
+    expect(hear(wrapper, token('observer'), invisible, true)).toBe(true);
+  });
+
   test('a manual Hidden override keeps the target heard', async () => {
     const wrapper = await loadCanDetect({ visibility: 'hidden', liveSense: false });
     const target = { ...token('target', { 'avs-override-from-observer': { state: 'hidden' } }), actor: { type: 'npc' } };

@@ -60,6 +60,18 @@ export function clearLiveImpreciseSenseCache() {
   results.clear();
 }
 
+export function targetIsInvisible(target) {
+  if (target?.document?.flags?.['pf2e-visioner']?.invisible) return true;
+  return !!target?.actor?.conditions?.find?.(
+    (c) => c.slug === 'invisible' || c.name?.toLowerCase?.().includes('invisible'),
+  );
+}
+
+export function liveSenseKeepsStoredHidden(observer, target) {
+  if (targetIsInvisible(target)) return true;
+  return liveImpreciseSenseDuringMove(observer, target) !== false;
+}
+
 export function liveImpreciseSenseDuringMove(observer, target) {
   if (!probe) return null;
   if (!hasActivePendingTokenMovement()) {

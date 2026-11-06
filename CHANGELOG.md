@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- **Invisible creatures that are undetected no longer show soundwaves while they move.** During a move, hearing counted as sensing an invisible creature, so one stored as undetected (Invisibility, a Will-o'-Wisp's Go Dark) flashed a soundwave. Hearing no longer reveals undetected invisible creatures mid-move, while an invisible creature that is hidden keeps its soundwave for the whole move. Senses that bypass invisibility, such as tremorsense and scent, still work.
+
 ## [8.14.17] - 2026-11-01
 
 ### Fixed
