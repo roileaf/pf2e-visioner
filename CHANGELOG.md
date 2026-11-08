@@ -1,5 +1,11 @@
 # Changelog
 
+## [8.14.19] - 2026-11-08
+
+### Fixed
+
+- **Search and Seek now reveal Foundry-hidden loot and hazards to the player who found them.** When a loot or hazard token was hidden with Foundry's own hide toggle, applying an Observed Search exploration or Seek result recorded the token as Observed, but Foundry kept it hidden, so the player still could not see it. Revealing it now clears Foundry's hidden flag and keeps every other player character at Hidden until they find it themselves.
+
 ## [8.14.18] - 2026-11-08
 
 ### Added
