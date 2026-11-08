@@ -307,6 +307,30 @@ export async function searchExploration(c, initial = 'undetected') {
   await c.mutate('move', 1600); await c.mutate('search', { range: 10 });
   c.equal(await c.gm.locator('.seek-preview-dialog').count(), 0, 'Out-of-range Search produces no target results');
 }
+async function setLootUndetectedWithManager(c) {
+  await c.mutate('hazard-manager');
+  const dialog = c.gm.locator('#pf2e-visioner-hazard-loot-manager'); await dialog.waitFor();
+  await dialog.locator(`tr[data-token-id="${c.fixture.target}"] [data-state="undetected"]`).click();
+  await dialog.locator('[data-action="apply"]').click();
+  await c.mutate('close-apps');
+}
+export async function searchFoundryHiddenLoot(c) {
+  await c.gm.evaluate(async id => canvas.tokens.get(id).document.setFlag('pf2e-visioner', 'stealthDC', 10), c.fixture.target);
+  await setLootUndetectedWithManager(c);
+  await c.mutate('foundry-hidden', true);
+  await c.check({ state: 'undetected', visible: false }, false, 'foundry-hidden-loot-baseline');
+  await c.mutate('search', { total: 60 });
+  const dialog = c.gm.locator('.seek-preview-dialog').last(); await dialog.waitFor(); await unfilter(dialog);
+  const hideFoundryHidden = dialog.locator('input[data-action="toggleHideFoundryHidden"]');
+  if (await hideFoundryHidden.isChecked()) await hideFoundryHidden.uncheck();
+  await dialog.locator(`[data-token-id="${c.fixture.target}"]`).first().waitFor();
+  await dialog.locator('[data-action="applyAll"]').click();
+  await c.check({ state: 'observed' }, undefined, 'search-observed-gm', { session: 'gm' });
+  await c.gm.waitForFunction(id => canvas.tokens.get(id).document.hidden === false, c.fixture.target);
+  c.equal(await c.gm.evaluate(id => canvas.tokens.get(id).document.hidden, c.fixture.target), false, 'Search reveal clears Foundry hidden on loot');
+  await c.check({ state: 'observed', visible: true }, true, 'search-reveals-foundry-hidden-loot-to-player');
+  await closeDialogs(c);
+}
 export async function sharedVision(c) {
   await c.mutate('link-spotter'); await c.check({ hasSpotter: true });
   await c.mutate('link-spotter', { clear: true }); await c.check({ hasSpotter: false });

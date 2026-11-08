@@ -121,6 +121,7 @@ export const workflows = {
   },
   'search-exploration': behavior.searchExploration,
   'search-unnoticed': c => behavior.searchExploration(c, 'unnoticed'),
+  'search-foundry-hidden-loot': behavior.searchFoundryHiddenLoot,
   'settings-macros': ui.settingsMacros,
   'stealth-initiative': features.stealthInitiative,
   'stealth-initiative-manual-states': features.stealthInitiativeManualStates,

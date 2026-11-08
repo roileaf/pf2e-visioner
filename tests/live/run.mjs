@@ -72,8 +72,8 @@ async function login(context, url, account, isGM) {
   page.on('console', message => { if (collectingStartup && message.type() === 'error') report.startupErrors.push(safeError(message.text())); });
   page.setDefaultTimeout(20000);
   await page.goto(`${url}/join`);
-  const select = page.locator('select[name="userid"]');
-  await page.locator('select[name="userid"], input[name="username"]').first().waitFor();
+  const select = page.locator('select[name="userid"], select[name="userId"]');
+  await page.locator('select[name="userid"], select[name="userId"], input[name="username"]').first().waitFor();
   // Check the world advertised by Foundry before submitting either account's credentials.
   assertQaWorld(await page.evaluate(() => globalThis.game?.world?.id), expectedWorld);
   if (await select.count()) {

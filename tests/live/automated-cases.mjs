@@ -29,6 +29,7 @@ export const automatedCases = [
   scenario('sniping-duo-creature-cover', 'sniping-duo-cover', { area: 'feats', secondObserver: true, observerType: 'character', observerLevel: 8, requireSettings: { autoCover: true } }),
   scenario('search-exploration', 'search-exploration', { area: 'exploration', observerType: 'character' }),
   scenario('search-exploration-unnoticed', 'search-unnoticed', { area: 'exploration', observerType: 'character' }),
+  scenario('search-exploration-foundry-hidden-loot', 'search-foundry-hidden-loot', { area: 'exploration', observerType: 'character', targetType: 'loot' }),
   scenario('settings-macros', 'settings-macros', { area: 'configuration' }),
   scenario('stealth-initiative-eligibility', 'stealth-initiative', {
     area: 'initiative', secondObserver: true, targetType: 'character', targetLevel: 15,

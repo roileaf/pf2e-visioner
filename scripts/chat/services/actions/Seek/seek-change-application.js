@@ -1,4 +1,5 @@
 import { MODULE_ID } from '../../../../constants.js';
+import { revealFoundryHiddenSeekTargets } from './seek-foundry-hidden-reveal.js';
 
 function splitSeekChanges(changes) {
   const tokenChanges = [];
@@ -168,6 +169,7 @@ export async function applySeekChangesInternal(changes, deps = {}) {
     } = splitSeekChanges(changes);
 
     await applyPreparedActorChanges(actorPreparedTokenChanges, actorPreparedWallChanges, deps);
+    await revealFoundryHiddenSeekTargets(tokenChanges, deps);
     await applyTokenChanges(tokenChanges, deps);
     await applyWallChanges(wallChangesByObserver, deps);
     await applyTileChanges(tileChangesByObserver, deps);
