@@ -5,6 +5,7 @@
 ### Fixed
 
 - **Invisible creatures that are undetected no longer show soundwaves while they move.** During a move, hearing counted as sensing an invisible creature, so one stored as undetected (Invisibility, a Will-o'-Wisp's Go Dark) flashed a soundwave. Hearing no longer reveals undetected invisible creatures mid-move, while an invisible creature that is hidden keeps its soundwave for the whole move. Senses that bypass invisibility, such as tremorsense and scent, still work.
+- **Minute timers on overrides now count game time instead of real time.** A 1 Min, 5 Min or custom-minutes timer used to run on the wall clock, so it ended after real minutes passed even when no in-game time had passed. These timers now end once the world clock (game time) reaches their expiry, whether the GM advances time or combat rounds pass. Timers set before this update keep counting real time.
 
 ## [8.14.17] - 2026-11-01
 

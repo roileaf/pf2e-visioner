@@ -1,6 +1,12 @@
 import { MODULE_ID, REALTIME_CHECK_INTERVAL_MS, TIMED_OVERRIDE_TYPES } from '../constants.js';
 import { overrideToDisplayVisibility } from '../visibility/perception-profile.js';
 import { isPrimaryGM } from './gm-election.js';
+import {
+  gameTimeExpiry,
+  isMinuteTimerActive,
+  minuteTimerRemainingMs,
+  usesGameTime,
+} from './minute-timer.js';
 
 export class TimedOverrideManager {
   static _realtimeIntervalId = null;
@@ -22,6 +28,10 @@ export class TimedOverrideManager {
 
     Hooks.on('pauseGame', (paused) => {
       this.handlePauseGame(paused);
+    });
+
+    Hooks.on('updateWorldTime', () => {
+      this.processRealtimeExpirations();
     });
 
     this._startRealtimeChecker();
@@ -160,7 +170,7 @@ export class TimedOverrideManager {
 
       case TIMED_OVERRIDE_TYPES.REALTIME:
         if (!config.minutes || config.minutes < 0) return null;
-        data.expiresAt = Date.now() + config.minutes * 60 * 1000;
+        data.expiresAtWorldTime = gameTimeExpiry(config.minutes);
         break;
 
       default:
@@ -269,7 +279,6 @@ export class TimedOverrideManager {
   static async processRealtimeExpirations() {
     if (!isPrimaryGM()) return;
     if (!canvas.tokens?.placeables) return;
-    if (game.paused) return;
 
     const now = Date.now();
     const allTokens = canvas.tokens.placeables;
@@ -284,7 +293,7 @@ export class TimedOverrideManager {
 
           const timer = flagData.timedOverride;
           if (timer.type !== TIMED_OVERRIDE_TYPES.REALTIME) continue;
-          if (!timer.expiresAt || timer.expiresAt > now) continue;
+          if (!this._isMinuteTimerDue(timer, now)) continue;
 
           expiredOverrides.push({
             token,
@@ -302,6 +311,11 @@ export class TimedOverrideManager {
     for (const expired of expiredOverrides) {
       await this._expireOverride(expired);
     }
+  }
+
+  static _isMinuteTimerDue(timer, now) {
+    if (!usesGameTime(timer) && (game.paused || !timer.expiresAt)) return false;
+    return !isMinuteTimerActive(timer, now);
   }
 
   static async _expireOverride(expired) {
@@ -524,8 +538,8 @@ export class TimedOverrideManager {
         });
 
       case TIMED_OVERRIDE_TYPES.REALTIME: {
-        if (!timedOverride.expiresAt) return '';
-        const remaining = timedOverride.expiresAt - this._nowMs();
+        const remaining = minuteTimerRemainingMs(timedOverride, this._nowMs());
+        if (remaining === null) return '';
         if (remaining <= 0) return 'Expired';
         const minutes = Math.floor(remaining / 60000);
         const seconds = Math.floor((remaining % 60000) / 1000);
@@ -548,7 +562,7 @@ export class TimedOverrideManager {
         return (timedOverride.roundsRemaining || 0) > 0;
 
       case TIMED_OVERRIDE_TYPES.REALTIME:
-        return timedOverride.expiresAt && timedOverride.expiresAt > this._nowMs();
+        return isMinuteTimerActive(timedOverride, this._nowMs());
 
       default:
         return false;

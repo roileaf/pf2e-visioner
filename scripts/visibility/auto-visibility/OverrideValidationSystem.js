@@ -8,6 +8,7 @@ import { VisibilityCalculator } from './VisibilityCalculator.js';
 import { normalizePerceptionProfile } from '../perception-profile.js';
 import { FeatsHandler } from '../../chat/services/FeatsHandler.js';
 import { getLastMovedTokenId } from '../../services/runtime-state.js';
+import { isMinuteTimerActive } from '../../services/minute-timer.js';
 
 const STEALTH_OVERRIDE_STATES = new Set(['hidden', 'undetected', 'unnoticed']);
 
@@ -584,7 +585,7 @@ export class OverrideValidationSystem {
   #shouldSkipTimedOverride(timedOverride) {
     if (!timedOverride) return false;
     if (timedOverride.type === 'permanent') return true;
-    if (timedOverride.type === 'realtime' && timedOverride.expiresAt > Date.now()) return true;
+    if (timedOverride.type === 'realtime' && isMinuteTimerActive(timedOverride)) return true;
     if (timedOverride.type === 'rounds' && timedOverride.roundsRemaining > 0) return true;
     return false;
   }

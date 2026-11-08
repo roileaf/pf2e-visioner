@@ -4,6 +4,7 @@ import { normalizePerceptionProfile, overrideMatchesVisibility } from '../../per
 import { FeatsHandler } from '../../../chat/services/FeatsHandler.js';
 import { LastValidationRequest } from '../utils/LastValidationRequest.js';
 import { OverrideValidityCache } from '../utils/OverrideValidityCache.js';
+import { isMinuteTimerActive } from '../../../services/minute-timer.js';
 
 let visibilityCalculatorModulePromise = null;
 let coverDetectorModulePromise = null;
@@ -706,7 +707,7 @@ export class OverrideValidationManager {
 
     if (override.timedOverride) {
       const timer = override.timedOverride;
-      if (timer.type === 'realtime' && timer.expiresAt && timer.expiresAt > Date.now()) {
+      if (timer.type === 'realtime' && isMinuteTimerActive(timer)) {
         flushPerf({ reason: 'active-realtime-timer' });
         return null;
       }
@@ -1148,7 +1149,7 @@ export class OverrideValidationManager {
 
   _hasActiveTimer(timedOverride) {
     if (!timedOverride) return false;
-    if (timedOverride.type === 'realtime' && timedOverride.expiresAt > Date.now()) return true;
+    if (timedOverride.type === 'realtime' && isMinuteTimerActive(timedOverride)) return true;
     if (timedOverride.type === 'rounds' && timedOverride.roundsRemaining > 0) return true;
     return false;
   }

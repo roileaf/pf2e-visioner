@@ -51,6 +51,7 @@ import {
   overrideToLegacyVisibility,
   profileToLegacyVisibility,
 } from './visibility/perception-profile.js';
+import { isMinuteTimerActive } from './services/minute-timer.js';
 
 function getForcedDeletion() {
   const ForcedDeletion = foundry?.data?.operators?.ForcedDeletion;
@@ -2992,7 +2993,7 @@ export class Pf2eVisionerApi {
     }
     if (!timedOverride) return false;
     if (timedOverride.type === 'permanent') return true;
-    if (timedOverride.type === 'realtime' && timedOverride.expiresAt > Date.now()) return true;
+    if (timedOverride.type === 'realtime' && isMinuteTimerActive(timedOverride)) return true;
     if (timedOverride.type === 'rounds' && timedOverride.roundsRemaining > 0) return true;
     return false;
   }
