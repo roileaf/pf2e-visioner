@@ -19,7 +19,16 @@ export function readDoorPeekGeometry(doorDoc, key, fallback) {
   return fallback;
 }
 
+function isAllDoorsPeekableEnabled() {
+  try {
+    return globalThis.game?.settings?.get?.(MODULE_ID, 'allDoorsPeekable') === true;
+  } catch (_) {
+    return false;
+  }
+}
+
 export function isDoorPeekAllowed(doorDoc) {
+  if (isAllDoorsPeekableEnabled()) return !!doorDoc;
   return doorDoc?.getFlag?.(MODULE_ID, 'peekAllowed') === true;
 }
 

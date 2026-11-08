@@ -1109,6 +1109,10 @@
         "name": "Enable Corner Peeking",
         "hint": "Allow tokens to peek around corners with the Hold Peek keybind. Door peeking is controlled per-door in the wall configuration."
       },
+      "ALL_DOORS_PEEKABLE": {
+        "name": "Make All Doors Peekable",
+        "hint": "When enabled, every door in the world can be peeked through, ignoring each door's own Allow Peek toggle in the wall configuration. Per-door DC and peek geometry still apply."
+      },
       "AUTO_COVER_IGNORE_SMALLER_TOKENS": {
         "name": "Ignore Smaller Tokens",
         "hint": "Tokens smaller than the attacker will not provide Auto-Cover"

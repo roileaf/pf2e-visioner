@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- **New world setting: Make All Doors Peekable.** GMs can turn on one setting (Settings → Vision → Doors) to let tokens peek through every door in the world, without enabling Allow Peek on each door. While it is on, a door's own Allow Peek toggle is ignored; each door's peek DC and peek geometry still apply. Off by default.
+
 ### Fixed
 
 - **Invisible creatures that are undetected no longer show soundwaves while they move.** During a move, hearing counted as sensing an invisible creature, so one stored as undetected (Invisibility, a Will-o'-Wisp's Go Dark) flashed a soundwave. Hearing no longer reveals undetected invisible creatures mid-move, while an invisible creature that is hidden keeps its soundwave for the whole move. Senses that bypass invisibility, such as tremorsense and scent, still work.

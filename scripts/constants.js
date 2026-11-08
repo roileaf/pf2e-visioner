@@ -1232,6 +1232,15 @@ export const DEFAULT_SETTINGS = {
     type: Boolean,
     default: false,
   },
+  allDoorsPeekable: {
+    name: 'PF2E_VISIONER.SETTINGS.ALL_DOORS_PEEKABLE.name',
+    hint: 'PF2E_VISIONER.SETTINGS.ALL_DOORS_PEEKABLE.hint',
+    scope: 'world',
+    config: true,
+    restricted: true,
+    type: Boolean,
+    default: false,
+  },
   playerPeekBlockMode: {
     name: 'PF2E_VISIONER.SETTINGS.PLAYER_PEEK_BLOCK_MODE.name',
     hint: 'PF2E_VISIONER.SETTINGS.PLAYER_PEEK_BLOCK_MODE.hint',

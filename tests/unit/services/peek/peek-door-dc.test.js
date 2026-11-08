@@ -42,6 +42,32 @@ describe('peek door DC', () => {
     expect(isDoorPeekAllowed(door)).toBe(false);
   });
 
+  describe('allDoorsPeekable world setting', () => {
+    afterEach(() => {
+      game.settings.set('pf2e-visioner', 'allDoorsPeekable', undefined);
+    });
+
+    test('door without flag is peekable when setting is on', () => {
+      game.settings.set('pf2e-visioner', 'allDoorsPeekable', true);
+      expect(isDoorPeekAllowed({ getFlag: () => undefined })).toBe(true);
+    });
+
+    test('door with flag explicitly false is peekable when setting is on', () => {
+      game.settings.set('pf2e-visioner', 'allDoorsPeekable', true);
+      expect(isDoorPeekAllowed({ getFlag: () => false })).toBe(true);
+    });
+
+    test('door without flag is not peekable when setting is off', () => {
+      game.settings.set('pf2e-visioner', 'allDoorsPeekable', false);
+      expect(isDoorPeekAllowed({ getFlag: () => undefined })).toBe(false);
+    });
+
+    test('missing door is not peekable even when setting is on', () => {
+      game.settings.set('pf2e-visioner', 'allDoorsPeekable', true);
+      expect(isDoorPeekAllowed(null)).toBe(false);
+    });
+  });
+
   test('rollPeekCheck success when degree >= 2', async () => {
     const roll = jest.fn(async () => ({ degreeOfSuccess: 2 }));
     const out = await rollPeekCheck({ token: createMockToken({ id: 't' }), dc: 15, roll });
