@@ -62,6 +62,66 @@ export function doesWallBlockAtElevation(wallDocument, elevationRange) {
   return true;
 }
 
+const ATTACKER_HEIGHT_SAMPLES = 5;
+
+function spanSampleHeights(span) {
+  const height = span.top - span.bottom;
+  if (!(height > 0)) return [span.bottom];
+  return Array.from(
+    { length: ATTACKER_HEIGHT_SAMPLES },
+    (_, i) => span.bottom + (height * (i + 0.5)) / ATTACKER_HEIGHT_SAMPLES,
+  );
+}
+
+function blockedTargetInterval(bounds, eyeZ, t) {
+  if (!(t > 0)) {
+    return eyeZ >= bounds.bottom && eyeZ < bounds.top ? [-Infinity, Infinity] : null;
+  }
+  return [eyeZ + (bounds.bottom - eyeZ) / t, eyeZ + (bounds.top - eyeZ) / t];
+}
+
+function clippedIntervals(intervals, span) {
+  return intervals
+    .filter(Boolean)
+    .map(([lo, hi]) => [Math.max(lo, span.bottom), Math.min(hi, span.top)])
+    .filter(([lo, hi]) => hi > lo)
+    .sort((a, b) => a[0] - b[0]);
+}
+
+function mergedLength(intervals) {
+  let total = 0;
+  let end = -Infinity;
+  for (const [lo, hi] of intervals) {
+    const start = Math.max(lo, end);
+    if (hi > start) total += hi - start;
+    end = Math.max(end, hi);
+  }
+  return total;
+}
+
+function pointBlockedFraction(intervals, z) {
+  return intervals.some((interval) => interval && z >= interval[0] && z < interval[1]) ? 1 : 0;
+}
+
+function targetBlockedFraction(hits, eyeZ, targetSpan) {
+  const intervals = hits.map(({ bounds, t }) => blockedTargetInterval(bounds, eyeZ, t));
+  const height = targetSpan.top - targetSpan.bottom;
+  if (!(height > 0)) return pointBlockedFraction(intervals, targetSpan.bottom);
+  return mergedLength(clippedIntervals(intervals, targetSpan)) / height;
+}
+
+export function getWallsVerticalBlockedFraction(wallHits, attackerSpan, targetSpan) {
+  if (!wallHits?.length) return 0;
+  const hits = wallHits.map(({ wallDocument, t }) => ({
+    bounds: getWallElevationBounds(wallDocument),
+    t,
+  }));
+  if (hits.some(({ bounds }) => !bounds)) return 1;
+  const eyes = spanSampleHeights(attackerSpan);
+  const sum = eyes.reduce((acc, eyeZ) => acc + targetBlockedFraction(hits, eyeZ, targetSpan), 0);
+  return sum / eyes.length;
+}
+
 export function doesWallBlockLineOfSight(wallDocument, attackerSpan, targetSpan, t) {
   const wallBounds = getWallElevationBounds(wallDocument);
 

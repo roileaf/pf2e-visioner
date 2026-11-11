@@ -19,7 +19,12 @@ import {
   getTokenVerticalSpanFt,
 } from '../../helpers/size-elevation-utils.js';
 import { doesWallSenseBlockFromPoint } from '../../helpers/wall-sense-utils.js';
-import { doesWallBlockAtElevation, doesWallBlockLineOfSight } from '../../helpers/wall-height-utils.js';
+import {
+  doesWallBlockAtElevation,
+  doesWallBlockLineOfSight,
+  getWallElevationBounds,
+  getWallsVerticalBlockedFraction,
+} from '../../helpers/wall-height-utils.js';
 import { RuleElementCoverService } from '../../rule-elements/RuleElementCoverService.js';
 import { LevelsIntegration } from '../../services/LevelsIntegration.js';
 
@@ -162,7 +167,7 @@ export class CoverDetector {
       }
 
       // FIRST: Check for wall cover overrides - these take precedence regardless of natural blocking
-      const wallOverride = this._checkWallCoverOverrides(p1, p2, elevationRange);
+      const wallOverride = this._checkWallCoverOverrides(p1, p2, elevationRange, attackerSpan, targetSpan);
       if (wallOverride !== null) {
         let adjusted = this._applyLevelsCoverAdjustment(attacker, target, wallOverride);
         const allowGreaterOverride = !!game.settings.get('pf2e-visioner', 'wallCoverAllowGreater');
@@ -722,7 +727,15 @@ export class CoverDetector {
       }
     }
 
+    if (coverCategory === 'none' && this._centerLineCrossesHeightWall(segmentAnalysis)) {
+      coverCategory = 'standard';
+    }
+
     return coverCategory;
+  }
+
+  _centerLineCrossesHeightWall(segmentAnalysis) {
+    return segmentAnalysis.blockingWalls.some(({ wall }) => !!getWallElevationBounds(wall));
   }
 
   /**
@@ -892,7 +905,8 @@ export class CoverDetector {
 
         if (attackerSpan && targetSpan && rayLength > 0) {
           const t = Math.sqrt((intersection.x - p1.x) ** 2 + (intersection.y - p1.y) ** 2) / rayLength;
-          if (!doesWallBlockLineOfSight(wallDoc, attackerSpan, targetSpan, t)) {
+          const fraction = getWallsVerticalBlockedFraction([{ wallDocument: wallDoc, t }], attackerSpan, targetSpan);
+          if (fraction <= 0) {
             continue;
           }
         } else if (elevationRange && !doesWallBlockAtElevation(wallDoc, elevationRange)) {
@@ -1000,7 +1014,7 @@ export class CoverDetector {
       let blocked = 0;
       for (const pt of points) {
         const sample = this._constrainWallCoverSample(targetCenter, pt, p1, elevationRange, targetSpan);
-        if (this._isRayBlockedByWalls(p1, sample, elevationRange, attackerSpan, targetSpan)) blocked++;
+        blocked += this._wallCoverSampleWeight(p1, sample, elevationRange, attackerSpan, targetSpan);
       }
 
       // Calculate raw percentage
@@ -1012,6 +1026,54 @@ export class CoverDetector {
     } catch {
       return 0;
     }
+  }
+
+  _wallCoverSampleWeight(attackerPoint, sample, elevationRange, attackerSpan, targetSpan) {
+    if (attackerSpan && targetSpan) {
+      const hits = this._collectAttackerToSampleWallHits(attackerPoint, sample);
+      return getWallsVerticalBlockedFraction(hits, attackerSpan, targetSpan);
+    }
+    return this._isRayBlockedByWalls(attackerPoint, sample, elevationRange) ? 1 : 0;
+  }
+
+  _collectAttackerToSampleWallHits(attackerPoint, sample) {
+    return this._collectRayWallHits(sample, attackerPoint, attackerPoint).map((hit) => ({
+      wallDocument: hit.wallDocument,
+      t: 1 - hit.t,
+    }));
+  }
+
+  _collectRayWallHits(a, b, wallSenseSourcePoint = a) {
+    const rayLength = Math.hypot(b.x - a.x, b.y - a.y);
+    if (!(rayLength > 0)) return [];
+    const hits = [];
+    for (const wall of this._getSceneWalls()) {
+      const hit = this._rayWallHit(a, b, wall, rayLength, wallSenseSourcePoint);
+      if (hit) hits.push(hit);
+    }
+    return hits;
+  }
+
+  _rayWallHit(a, b, wall, rayLength, wallSenseSourcePoint) {
+    const coords = this._getWallCoords(wall);
+    if (!coords) return null;
+    const wallDocument = wall.document || wall;
+    if (!this._doesWallBlockFromDirection(wallDocument, wallSenseSourcePoint)) return null;
+    const intersection = this._lineIntersectionPoint(a.x, a.y, b.x, b.y, ...coords);
+    if (!intersection) return null;
+    const distance = Math.hypot(intersection.x - a.x, intersection.y - a.y);
+    if (distance >= rayLength - 1) return null;
+    return { wallDocument, t: distance / rayLength };
+  }
+
+  _isTacticalWallLineBlocked(wallSample, attackerCorner, elevationRange, attackerSpan, targetSpan) {
+    if (!attackerSpan || !targetSpan) {
+      return this._isRayBlockedByWalls(wallSample, attackerCorner, elevationRange, null, null, attackerCorner);
+    }
+    const hits = this._collectAttackerToSampleWallHits(attackerCorner, wallSample);
+    if (!hits.length) return false;
+    const fraction = getWallsVerticalBlockedFraction(hits, attackerSpan, targetSpan);
+    return fraction * 100 >= this._getWallCoverThresholds().standardThreshold;
   }
 
   /**
@@ -2303,16 +2365,7 @@ export class CoverDetector {
         let lineBlocked = false;
 
         // Check if this line is blocked by walls
-        if (
-          this._isRayBlockedByWalls(
-            wallSample,
-            attackerCorner,
-            elevationRange,
-            attackerSpan,
-            targetSpan,
-            attackerCorner,
-          )
-        ) {
+        if (this._isTacticalWallLineBlocked(wallSample, attackerCorner, elevationRange, attackerSpan, targetSpan)) {
           lineBlocked = true;
           wallBlockedAny = true;
         }
