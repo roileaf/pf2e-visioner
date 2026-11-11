@@ -1,5 +1,11 @@
 # Changelog
 
+## [8.14.20] - 2026-11-11
+
+### Fixed
+
+- **Auto-cover now compares Wall Height walls with the attacker's and target's actual heights.** Cover behind a short wall used to jump between standard and greater depending on how far the target stood from the wall, a target hugging a full-height wall got only standard cover, and walls set to "provides up to" a cover level gave that cover to creatures far above or below them (for example a gargantuan creature at +100 behind a 1 ft wall). Cover is now based on how much of the target's height each wall hides from the attacker, so a short wall gives the same cover at any distance, sight lines passing over or under a wall are ignored, and large attackers can see over short walls. A center-to-center line through a Wall Height wall still grants at least standard cover.
+
 ## [8.14.19] - 2026-11-08
 
 ### Fixed
