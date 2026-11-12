@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- **Line of sight no longer depends on which token is selected.** With a wall stub partly covering a creature, the selected token's line of sight could count a creature that was only heard as seen, while unselected tokens skipped Foundry's sight test entirely. So the saved visibility, the hover reasons and what was drawn could disagree, for example a creature shown as Observed that wasn't drawn. Both now require at least one of the target's test points inside the observer's sight area, matching Foundry's own sight.
+
 ## [8.15.1] - 2026-11-12
 
 ### Fixed

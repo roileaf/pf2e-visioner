@@ -452,8 +452,9 @@ export class VisionAnalyzer {
         // Native points require wall-constrained geometry. Reuse them for the
         // two synchronous checks, but never retain them across movement calls.
         const nativeTargetPoints = target?.document?.getVisibilityTestPoints?.();
-        const foundryPointVisible = usingOnDemandLos ? null :
-          this.#testFoundryVisibility(observer, target, targetPos, nativeTargetPoints);
+        const foundryPointVisible = usingOnDemandLos
+          ? this.#onDemandLosContainsTestPoint(los, target, targetPos, nativeTargetPoints)
+          : this.#activeLosPointVisibility(observer, target, targetPos, nativeTargetPoints, los);
 
         // HYBRID VALIDATION: Compare vision polygon with full geometric LOS
         // When they agree, trust the result. When they disagree, use geometric as tiebreaker.
@@ -1036,6 +1037,19 @@ export class VisionAnalyzer {
     return this.#getDenseTokenShapeSamplePoints(token, centerPos).some((point) =>
       this.#doesLosContainPoint(los, point),
     );
+  }
+
+  #activeLosPointVisibility(observer, target, targetPos, nativePoints, los) {
+    const coreResult = this.#testFoundryVisibility(observer, target, targetPos, nativePoints);
+    if (coreResult === false) return false;
+    if (this.#onDemandLosContainsTestPoint(los, target, targetPos, nativePoints) === false) return false;
+    return coreResult;
+  }
+
+  #onDemandLosContainsTestPoint(los, target, targetPos, nativePoints) {
+    if (typeof los?.contains !== 'function' && typeof los?.containsPoint !== 'function') return null;
+    const points = this.#getCoreVisibilityTestPoints(target, targetPos, nativePoints);
+    return points.some((point) => this.#doesLosContainPoint(los, point));
   }
 
   #doesLosContainPoint(los, point) {

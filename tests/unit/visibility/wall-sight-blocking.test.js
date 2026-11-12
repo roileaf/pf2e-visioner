@@ -807,4 +807,78 @@ describe('Wall Sight Blocking Fix', () => {
       expect(visionAnalyzer.isSoundBlocked(observer, target)).toBe(true);
     });
   });
+
+  describe('hasLineOfSight - same answer whether or not the observer is selected', () => {
+    function corePoints(cx, cy) {
+      const r = 45;
+      return [
+        { x: cx, y: cy },
+        { x: cx - r, y: cy - r },
+        { x: cx + r, y: cy - r },
+        { x: cx + r, y: cy + r },
+        { x: cx - r, y: cy + r },
+      ];
+    }
+
+    function makeSquareToken({ id, x, y }) {
+      return {
+        name: id,
+        center: { x: x + 50, y: y + 50 },
+        externalRadius: 50,
+        vision: { active: false },
+        shape: null,
+        actor: { system: { perception: { vision: true }, traits: { size: { value: 'med' } } } },
+        document: {
+          id,
+          x,
+          y,
+          width: 1,
+          height: 1,
+          elevation: 0,
+          getVisibilityTestPoints: () => corePoints(x + 50, y + 50),
+        },
+      };
+    }
+
+    function sightPolygonMissingEveryTestPoint() {
+      return {
+        points: [0, 0, 1, 1, 2, 2],
+        intersectCircle: jest.fn(() => ({ points: [1, 2, 3, 4] })),
+        contains: jest.fn(() => false),
+      };
+    }
+
+    beforeEach(() => {
+      const wallHeight = jest.requireMock('../../../scripts/helpers/wall-height-utils.js');
+      wallHeight.doesWallBlockLineOfSight = jest.fn(() => true);
+      global.CONFIG = {
+        Canvas: { polygonBackends: { sight: { create: jest.fn(() => sightPolygonMissingEveryTestPoint()) } } },
+      };
+    });
+
+    afterEach(() => {
+      delete global.CONFIG;
+    });
+
+    test('an unselected observer whose sight polygon misses every test point does not see the target', () => {
+      const observer = makeSquareToken({ id: 'unselected-observer', x: 500, y: 1000 });
+      const target = makeSquareToken({ id: 'unselected-target', x: 500, y: 800 });
+      global.canvas.walls.placeables = [
+        makeWall({ sight: CONST.WALL_SENSE_TYPES.NORMAL, c: [540, 1000, 600, 1000] }),
+      ];
+      expect(visionAnalyzer.hasLineOfSight(observer, target)).toBe(false);
+    });
+
+    test('a selected observer heard-but-not-seen target is not counted as line of sight', () => {
+      const observer = makeSquareToken({ id: 'selected-observer', x: 500, y: 1000 });
+      observer.vision = { active: true, los: sightPolygonMissingEveryTestPoint() };
+      const target = makeSquareToken({ id: 'selected-target', x: 500, y: 800 });
+      global.game.release = { generation: 14 };
+      global.canvas.visibility = { testVisibility: jest.fn(() => true) };
+      global.canvas.walls.placeables = [
+        makeWall({ sight: CONST.WALL_SENSE_TYPES.NORMAL, c: [540, 1000, 600, 1000] }),
+      ];
+      expect(visionAnalyzer.hasLineOfSight(observer, target)).toBe(false);
+    });
+  });
 });
