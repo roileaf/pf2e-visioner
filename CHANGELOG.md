@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [8.15.1] - 2026-11-12
 
 ### Fixed
 
