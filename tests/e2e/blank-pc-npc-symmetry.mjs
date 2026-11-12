@@ -56,7 +56,7 @@ function sceneData(gridSize, lighting) {
     padding: 0,
     grid: { size: gridSize, distance: 5, units: 'ft' },
     tokenVision: true,
-    environment: { darknessLevel: lighting.darknessLevel, globalLight: lighting.globalLight },
+    ...(lighting.sceneDefaults ? {} : { environment: { darknessLevel: lighting.darknessLevel, globalLight: lighting.globalLight } }),
   };
 }
 
@@ -67,13 +67,17 @@ async function tokenData(actor, [col, row], gridSize) {
   return doc.toObject();
 }
 
+function tokenIdsByActor(keys, actors, created) {
+  return Object.fromEntries(keys.map((key) => [key, created.find((t) => t.actorId === actors[key].id).id]));
+}
+
 async function createScene(actors, gridSize, lighting) {
   const scene = await game.scenes.documentClass.create(sceneData(gridSize, lighting));
   const keys = Object.keys(POSITIONS);
   const data = [];
   for (const key of keys) data.push(await tokenData(actors[key], POSITIONS[key], gridSize));
   const created = await scene.createEmbeddedDocuments('Token', data);
-  const tokenIds = Object.fromEntries(keys.map((key, i) => [key, created[i].id]));
+  const tokenIds = tokenIdsByActor(keys, actors, created);
   return { scene, tokenIds };
 }
 
@@ -205,7 +209,7 @@ async function createHpScene(actors, gridSize) {
   const data = [];
   for (const key of keys) data.push(await tokenData(actors[key], HP_POSITIONS[key], gridSize));
   const created = await scene.createEmbeddedDocuments('Token', data);
-  return { scene, tokenIds: Object.fromEntries(keys.map((key, i) => [key, created[i].id])) };
+  return { scene, tokenIds: tokenIdsByActor(keys, actors, created) };
 }
 
 function hpOf(token) {
@@ -248,6 +252,125 @@ export async function runHpDefeatedTest({ gridSize = 100, settleMs = 2500, keepS
     for (const [key, id] of Object.entries(tokenIds)) rows.push(await exclusionRow(key, canvas.tokens.get(id), exclusion));
     const pair = await healthyPairCheck(tokenIds);
     return { pass: rows.every((r) => r.ok) && pair.ok, clonedFrom: sourceName, rows, pair };
+  } finally {
+    if (previousScene) await previousScene.view();
+    if (!keepScene) {
+      await scene.delete();
+      await game.actors.documentClass.deleteDocuments(Object.values(actors).map((a) => a.id));
+    }
+  }
+}
+
+const TRIO = { aaa: 'character', bbb: 'npc', ccc: 'character' };
+const TRIO_DISPOSITIONS = { aaa: 1, bbb: -1, ccc: -1 };
+const TRIO_POSITIONS = { bbb: [6, 4], aaa: [7, 4], ccc: [8, 4] };
+
+async function createTrioActors(pcHp) {
+  if (pcHp === 'world') return createWorldTrioActors();
+  if (pcHp && typeof pcHp === 'object') return createImportedTrioActors(pcHp);
+  const data = Object.entries(TRIO).map(([key, type]) => ({ name: `${TAG} ${key}`, type }));
+  const created = await game.actors.documentClass.createDocuments(data);
+  const actors = Object.fromEntries(created.map((a) => [a.name.replace(`${TAG} `, ''), a]));
+  if (pcHp !== null) {
+    for (const key of ['aaa', 'ccc']) await actors[key].update({ 'system.attributes.hp.value': pcHp });
+  }
+  return actors;
+}
+
+async function createWorldTrioActors() {
+  const source = worldCharacterWithHp();
+  if (!source) throw new Error('no world character with hit points to clone');
+  const [bbb] = await game.actors.documentClass.createDocuments([{ name: `${TAG} bbb`, type: 'npc' }]);
+  return { aaa: await cloneActor(source, 'aaa'), bbb, ccc: await cloneActor(source, 'ccc') };
+}
+
+async function createImportedTrioActors(exports) {
+  const data = Object.keys(TRIO).map((key) => {
+    const { _stats, folder, ...rest } = exports[key];
+    return { ...rest, name: `${TAG} ${key}`, folder: null };
+  });
+  const created = await game.actors.documentClass.createDocuments(data);
+  return Object.fromEntries(created.map((a) => [a.name.replace(`${TAG} `, ''), a]));
+}
+
+function trioLightAndWall(gridSize) {
+  const lightX = 7 * gridSize;
+  const lightY = 11 * gridSize;
+  const wallY = 9 * gridSize;
+  return {
+    light: { x: lightX, y: lightY, config: { bright: 15, dim: 30 } },
+    wall: { c: [lightX - gridSize / 2, wallY, lightX + gridSize / 2, wallY], sight: 0, light: 20, sound: 20, move: 20 },
+  };
+}
+
+const TRIO_DARK = { key: 'trio', darknessLevel: 1, globalLight: { enabled: false } };
+
+async function createTrioScene(actors, gridSize, lighting) {
+  const scene = await game.scenes.documentClass.create(sceneData(gridSize, lighting));
+  if (lighting.sceneDefaults) await scene.update({ 'environment.darknessLevel': lighting.darknessLevel });
+  const { light, wall } = trioLightAndWall(gridSize);
+  await scene.createEmbeddedDocuments('AmbientLight', [light]);
+  await scene.createEmbeddedDocuments('Wall', [wall]);
+  const keys = Object.keys(TRIO_POSITIONS);
+  const data = [];
+  for (const key of keys) {
+    const token = await tokenData(actors[key], TRIO_POSITIONS[key], gridSize);
+    data.push({ ...token, disposition: TRIO_DISPOSITIONS[key] });
+  }
+  const created = await scene.createEmbeddedDocuments('Token', data);
+  return { scene, tokenIds: tokenIdsByActor(keys, actors, created) };
+}
+
+async function trioMatrix(tokenIds) {
+  const rows = {};
+  for (const [observerKey, observerId] of Object.entries(tokenIds)) {
+    for (const [targetKey, targetId] of Object.entries(tokenIds)) {
+      if (observerKey === targetKey) continue;
+      const observer = canvas.tokens.get(observerId);
+      const target = canvas.tokens.get(targetId);
+      rows[`${observerKey}->${targetKey}`] = {
+        direct: await directVisibility(observer, target),
+        stored: storedVisibility(observerId, targetId),
+      };
+    }
+  }
+  return rows;
+}
+
+function trioHp(tokenIds) {
+  return Object.fromEntries(Object.entries(tokenIds).map(([key, id]) => [key, hpOf(canvas.tokens.get(id))]));
+}
+
+async function matrixWhileControlling(tokenIds, key, settleMs) {
+  canvas.tokens.get(tokenIds[key]).control({ releaseOthers: true });
+  await sleep(settleMs);
+  return trioMatrix(tokenIds);
+}
+
+function allHiddenInDarkness(matrix) {
+  return Object.values(matrix).every((r) => r.direct === 'hidden' && (r.stored === null || r.stored === 'hidden'));
+}
+
+export async function runTrioReplicateTest({
+  gridSize = 100,
+  settleMs = 3000,
+  pcHp = 10,
+  lighting = TRIO_DARK,
+  keepScene = false,
+} = {}) {
+  if (!game.user.isGM) return { pass: false, error: 'run as a GM' };
+  const previousScene = canvas.scene;
+  const actors = await createTrioActors(pcHp);
+  const { scene, tokenIds } = await createTrioScene(actors, gridSize, lighting);
+  try {
+    await scene.view();
+    await waitForCanvasScene(scene.id);
+    await sleep(settleMs);
+    const byController = {};
+    for (const key of Object.keys(tokenIds)) byController[key] = await matrixWhileControlling(tokenIds, key, settleMs);
+    canvas.tokens.releaseAll();
+    const pass = Object.values(byController).every(allHiddenInDarkness);
+    return { pass, hp: trioHp(tokenIds), activeGM: game.users.activeGM?.name, byController };
   } finally {
     if (previousScene) await previousScene.view();
     if (!keepScene) {
