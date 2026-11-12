@@ -1069,7 +1069,9 @@ export function isTokenDefeated(token) {
 
     // HP based check (covers 0 or negative)
     const hpValue = actor.hitPoints?.value ?? actor.system?.attributes?.hp?.value;
-    if (typeof hpValue === 'number' && hpValue <= 0) {
+    const hpMax = actor.hitPoints?.max ?? actor.system?.attributes?.hp?.max;
+    const hpIsSet = typeof hpMax !== 'number' || hpMax > 0;
+    if (typeof hpValue === 'number' && hpValue <= 0 && hpIsSet) {
       return true;
     }
 

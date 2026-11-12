@@ -6,6 +6,10 @@
 
 - **Hover a token to see why it is hidden.** A small box next to the hover badges explains why the hovered creature is concealed, hidden or undetected: the state, the lighting, and up to three reasons (for example heard but not seen, or in magical darkness), from your selected token. A GM with nothing selected gets one line per player character. Observed creatures show no box. Turn it on per user with Explain Visibility on Hover (off by default), and the GM can let players see it for tokens they can see (Let Players See Hover Explanations, off by default).
 
+### Fixed
+
+- **Fresh characters with unset hit points now see by the normal rules.** A character whose HP was never set up (0 of 0, such as a blank test PC with no class) counted as defeated, so AVS skipped it as an observer and it saw every creature as observed, even in darkness, while other creatures still saw it as hidden. HP now only marks a creature defeated when its maximum is above 0.
+
 ## [8.14.21] - 2026-11-12
 
 ### Fixed
