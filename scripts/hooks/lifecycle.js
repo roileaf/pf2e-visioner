@@ -5,7 +5,8 @@
 import { injectChatAutomationStyles } from '../chat/chat-automation-styles.js';
 import { MODULE_ID } from '../constants.js';
 import { scheduleCanvasPerceptionUpdate } from '../helpers/perception-refresh.js';
-import { initializeHoverTooltips } from '../services/HoverTooltips.js';
+import { HoverTooltips, initializeHoverTooltips } from '../services/HoverTooltips.js';
+import { initializeHoverExplain } from '../services/HoverExplain/hover-explain.js';
 import { runVisibilityV2MigrationIfNeeded } from '../migrations/visibility-v2-migration.js';
 import { registerSocket } from '../services/socket.js';
 import {
@@ -976,6 +977,7 @@ export async function onCanvasReady() {
   } catch (_) {}
 
   initializeHoverTooltips();
+  initializeHoverExplain(HoverTooltips);
 
   try {
     const { registerAvsGmVisionWarning } = await import('../ui/AvsGmVisionWarning.js');

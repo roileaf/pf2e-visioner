@@ -611,6 +611,26 @@ export const DEFAULT_SETTINGS = {
     default: true,
   },
 
+  hoverExplain: {
+    name: 'PF2E_VISIONER.SETTINGS.HOVER_EXPLAIN.name',
+    hint: 'PF2E_VISIONER.SETTINGS.HOVER_EXPLAIN.hint',
+    scope: 'client',
+    config: true,
+    restricted: false,
+    type: Boolean,
+    default: false,
+  },
+
+  playerHoverExplain: {
+    name: 'PF2E_VISIONER.SETTINGS.PLAYER_HOVER_EXPLAIN.name',
+    hint: 'PF2E_VISIONER.SETTINGS.PLAYER_HOVER_EXPLAIN.hint',
+    scope: 'world',
+    config: true,
+    restricted: true,
+    type: Boolean,
+    default: false,
+  },
+
   tooltipFontSize: {
     name: 'PF2E_VISIONER.SETTINGS.TOOLTIP_FONT_SIZE.name',
     hint: 'PF2E_VISIONER.SETTINGS.TOOLTIP_FONT_SIZE.hint',

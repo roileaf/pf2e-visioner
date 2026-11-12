@@ -419,6 +419,14 @@
         "name": "(FR) Outil d'édition rapide Visioner",
         "hint": "(FR) Affiche l'outil d'édition rapide sur la barre"
       },
+      "HOVER_EXPLAIN": {
+        "name": "Expliquer la visibilité au survol",
+        "hint": "Survoler un jeton affiche un petit encadré à côté de ses badges expliquant pourquoi il est caché, masqué ou non détecté, depuis votre jeton sélectionné (ou, pour le MJ sans sélection, depuis chaque personnage joueur). Nécessite les infobulles de survol."
+      },
+      "PLAYER_HOVER_EXPLAIN": {
+        "name": "Montrer les explications au survol aux joueurs",
+        "hint": "Les joueurs obtiennent aussi l'explication au survol, depuis les jetons qu'ils contrôlent ou possèdent, pour les jetons qu'ils voient."
+      },
       "ALLOW_PLAYER_TOOLTIPS": {
         "name": "Permet les infobulles pour les joueurs",
         "hint": "Lorsque c'est activé, les joueurs euvent vois les indications de visibilité de leur perspective au survol des jetons (nécessite un redémarrage)"
@@ -896,6 +904,11 @@
         "name": "(FR TODO) Show Visibility Factors",
         "hint": "(FR TODO) Press to show detailed reasons for visibility states from controlled tokens to all other tokens."
       }
+    },
+    "HOVER_EXPLAIN": {
+      "TITLE": "Visioner",
+      "FROM": "depuis {name}",
+      "MORE": "et {count} de plus"
     },
     "VISIBILITY_FACTORS": {
       "NO_TOKEN_SELECTED": "(FR TODO) Select at least one token to show visibility factors",

@@ -688,6 +688,14 @@
         "name": "Włącz podpowiedzi po najechaniu kursorem",
         "hint": "Pokaż podpowiedzi dotyczące statusu widoczności po najechaniu kursorem na tokeny"
       },
+      "HOVER_EXPLAIN": {
+        "name": "Wyjaśniaj widoczność po najechaniu",
+        "hint": "Najechanie na żeton pokazuje małe okienko obok jego plakietek, wyjaśniające, dlaczego jest ukryty, zasłonięty lub niewykryty, z perspektywy wybranego żetonu (a dla MG bez zaznaczenia – z perspektywy każdej postaci gracza). Wymaga podpowiedzi po najechaniu."
+      },
+      "PLAYER_HOVER_EXPLAIN": {
+        "name": "Pokazuj graczom wyjaśnienia po najechaniu",
+        "hint": "Gracze także widzą wyjaśnienie po najechaniu, z perspektywy żetonów, które kontrolują lub posiadają, dla żetonów, które widzą."
+      },
       "ALLOW_PLAYER_TOOLTIPS": {
         "name": "Zezwól na podpowiedzi dla gracza",
         "hint": "Po włączeniu tej opcji gracze mogą zobaczyć podpowiedzi dotyczące widoczności z własnej perspektywy po najechaniu kursorem na tokeny."
@@ -1342,6 +1350,11 @@
         "name": "Pokaż czynniki widoczności",
         "hint": "Naciśnij, aby wyświetlić szczegółowe przyczyny stanów widoczności od tokenów kontrolowanych do wszystkich innych tokenów."
       }
+    },
+    "HOVER_EXPLAIN": {
+      "TITLE": "Visioner",
+      "FROM": "od {name}",
+      "MORE": "i {count} więcej"
     },
     "VISIBILITY_FACTORS": {
       "NO_TOKEN_SELECTED": "Wybierz co najmniej jeden token, aby wyświetlić czynniki widoczności.",

@@ -733,6 +733,14 @@
         "name": "Enable Hover Tooltips",
         "hint": "Show visibility status tooltips when hovering over tokens"
       },
+      "HOVER_EXPLAIN": {
+        "name": "Explain Visibility on Hover",
+        "hint": "Hovering a token shows a small box next to its badges explaining why it is hidden, concealed or undetected, from your selected token (or, for the GM with nothing selected, from each player character). Requires Hover Tooltips."
+      },
+      "PLAYER_HOVER_EXPLAIN": {
+        "name": "Let Players See Hover Explanations",
+        "hint": "Players also get the hover explanation, from tokens they control or own, for tokens they can see."
+      },
       "ALLOW_PLAYER_TOOLTIPS": {
         "name": "Allow Player Tooltips",
         "hint": "When enabled, players can see visibility indication tooltips from their perspective when hovering over tokens"
@@ -1494,6 +1502,11 @@
         "name": "Show Visibility Factors",
         "hint": "Press to show detailed reasons for visibility states from controlled tokens to all other tokens."
       }
+    },
+    "HOVER_EXPLAIN": {
+      "TITLE": "Visioner",
+      "FROM": "from {name}",
+      "MORE": "and {count} more"
     },
     "VISIBILITY_FACTORS": {
       "NO_TOKEN_SELECTED": "Select at least one token to show visibility factors",

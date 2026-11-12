@@ -276,6 +276,14 @@
                 "name": "启用悬停提示框",
                 "hint": "悬停于指示物时显示能见度状态提示信息"
             },
+            "HOVER_EXPLAIN": {
+                "name": "悬停时解释能见度",
+                "hint": "悬停于指示物时，在其徽章旁显示一个小框，从你选中的指示物（GM未选中时则从每个玩家角色）解释其为何处于藏匿、隐蔽或未察觉状态。需要启用悬停提示框。"
+            },
+            "PLAYER_HOVER_EXPLAIN": {
+                "name": "允许玩家查看悬停解释",
+                "hint": "玩家也能从其控制或拥有的指示物，对其可见的指示物获得悬停解释。"
+            },
             "ALLOW_PLAYER_TOOLTIPS": {
                 "hint": "若启用，玩家可以在悬停指示物时看见基于自身视角的能见度标志提示框",
                 "name": "玩家视角提示框"
@@ -1092,6 +1100,11 @@
             "ERROR_REMOVING_OVERRIDE": "移除自动能见度状态覆写时出错",
             "ERROR_CLEARING_OVERRIDES": "清除自动能见度状态覆写时出错",
             "ALL_OVERRIDES_CLEARED": "已清除{token}的所有AVS状态覆写"
+        },
+        "HOVER_EXPLAIN": {
+            "TITLE": "Visioner",
+            "FROM": "来自 {name}",
+            "MORE": "还有 {count} 个"
         },
         "VISIBILITY_FACTORS": {
             "REASONS": {
