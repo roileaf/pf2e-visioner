@@ -1,5 +1,11 @@
 # Changelog
 
+## [8.14.21] - 2026-11-12
+
+### Fixed
+
+- **"Blocks scent" walls now stop scent while a token is moving.** When a creature with scent moved within range of a creature behind a wall or door with Blocks scent ticked, the hidden creature's silhouette showed through the wall during the move and for a few seconds afterwards, until AVS finished recalculating. The live check used during movement now respects scent-blocking walls too ([#309](https://github.com/roileaf/pf2e-visioner/issues/309)).
+
 ## [8.14.20] - 2026-11-11
 
 ### Fixed
