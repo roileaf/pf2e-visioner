@@ -1548,87 +1548,10 @@ export class VisionAnalyzer {
         // proximity/reverse-proximity wall should block from the sound source side.
       }
 
-      const ray = new foundry.canvas.geometry.Ray(observer.center, target.center);
       const soundBlockingWalls = this.#getCachedSoundBlockingWalls();
-      const candidateWalls = this.#getRayCandidateWalls(
-        soundBlockingWalls,
-        observer.center,
-        target.center,
-      );
-
       const edgeSenseTypes = getEdgeSenseTypes();
-      const limitedSoundIntersections = [];
-
-      for (const wall of candidateWalls) {
-        const wallCoords = wall?.document?.c;
-        if (!Array.isArray(wallCoords) || wallCoords.length < 4) {
-          continue;
-        }
-
-        // Check if the ray intersects this sound-blocking wall
-        const intersection = foundry.utils.lineLineIntersection(
-          { x: ray.A.x, y: ray.A.y },
-          { x: ray.B.x, y: ray.B.y },
-          { x: wallCoords[0], y: wallCoords[1] },
-          { x: wallCoords[2], y: wallCoords[3] },
-        );
-
-        if (
-          intersection &&
-          typeof intersection.t0 === 'number' &&
-          intersection.t0 >= 0 &&
-          intersection.t0 <= 1
-        ) {
-          const wallDx = wallCoords[2] - wallCoords[0];
-          const wallDy = wallCoords[3] - wallCoords[1];
-          let t1;
-
-          if (Math.abs(wallDx) > Math.abs(wallDy)) {
-            t1 = (intersection.x - wallCoords[0]) / wallDx;
-          } else {
-            t1 = (intersection.y - wallCoords[1]) / wallDy;
-          }
-
-          if (t1 >= 0 && t1 <= 1) {
-            const soundSenseBlocks = doesWallSenseBlockFromPoint(
-              wall.document,
-              target.center,
-              wallCoords,
-              'sound',
-              {
-                system: 'sound',
-                endpoint: 'target-center',
-              },
-            );
-
-            if (!soundSenseBlocks) {
-              continue;
-            }
-
-            if (wall.document.sound === edgeSenseTypes.LIMITED) {
-              limitedSoundIntersections.push({
-                x: intersection.x,
-                y: intersection.y,
-                t0: intersection.t0,
-              });
-              continue;
-            }
-            // Found a normal (non-limited) sound-blocking wall
-            return true;
-          }
-        }
-      }
-
-      if (limitedSoundIntersections.length >= 2) {
-        const epsilon = 0.1;
-        const first = limitedSoundIntersections[0];
-        const allSamePoint = limitedSoundIntersections.every(
-          (point) => Math.abs(point.x - first.x) < epsilon && Math.abs(point.y - first.y) < epsilon,
-        );
-
-        if (!allSamePoint) {
-          return true;
-        }
+      if (this.#isSoundBlockedBetweenSamples(observer, target, soundBlockingWalls, edgeSenseTypes)) {
+        return true;
       }
       // Check if polygon backend for sound is available
       const soundBackend = CONFIG.Canvas.polygonBackends?.sound;
@@ -1643,7 +1566,102 @@ export class VisionAnalyzer {
       // On error, assume sound is NOT blocked (fail open for better UX)
       return false;
     }
-  } /**
+  }
+
+  #getHearingSamplePoints(token) {
+    const width = Number(token?.document?.width) || 0;
+    const height = Number(token?.document?.height) || 0;
+    if (width <= 1 && height <= 1) return [token.center];
+    return this.#getTokenSamplePoints(token, token.center);
+  }
+
+  #isSoundBlockedBetweenSamples(observer, target, soundBlockingWalls, edgeSenseTypes) {
+    const targetPoints = this.#getHearingSamplePoints(target);
+    return this.#getHearingSamplePoints(observer).every((from) =>
+      targetPoints.every((to) => this.#isSoundRayBlocked(from, to, soundBlockingWalls, edgeSenseTypes)),
+    );
+  }
+
+  #isSoundRayBlocked(from, to, soundBlockingWalls, edgeSenseTypes) {
+    const candidateWalls = this.#getRayCandidateWalls(soundBlockingWalls, from, to);
+
+    const limitedSoundIntersections = [];
+
+    for (const wall of candidateWalls) {
+      const wallCoords = wall?.document?.c;
+      if (!Array.isArray(wallCoords) || wallCoords.length < 4) {
+        continue;
+      }
+
+      // Check if the ray intersects this sound-blocking wall
+      const intersection = foundry.utils.lineLineIntersection(
+        { x: from.x, y: from.y },
+        { x: to.x, y: to.y },
+        { x: wallCoords[0], y: wallCoords[1] },
+        { x: wallCoords[2], y: wallCoords[3] },
+      );
+
+      if (
+        intersection &&
+        typeof intersection.t0 === 'number' &&
+        intersection.t0 >= 0 &&
+        intersection.t0 <= 1
+      ) {
+        const wallDx = wallCoords[2] - wallCoords[0];
+        const wallDy = wallCoords[3] - wallCoords[1];
+        let t1;
+
+        if (Math.abs(wallDx) > Math.abs(wallDy)) {
+          t1 = (intersection.x - wallCoords[0]) / wallDx;
+        } else {
+          t1 = (intersection.y - wallCoords[1]) / wallDy;
+        }
+
+        if (t1 >= 0 && t1 <= 1) {
+          const soundSenseBlocks = doesWallSenseBlockFromPoint(
+            wall.document,
+            to,
+            wallCoords,
+            'sound',
+            {
+              system: 'sound',
+              endpoint: 'target-center',
+            },
+          );
+
+          if (!soundSenseBlocks) {
+            continue;
+          }
+
+          if (wall.document.sound === edgeSenseTypes.LIMITED) {
+            limitedSoundIntersections.push({
+              x: intersection.x,
+              y: intersection.y,
+              t0: intersection.t0,
+            });
+            continue;
+          }
+          // Found a normal (non-limited) sound-blocking wall
+          return true;
+        }
+      }
+    }
+
+    if (limitedSoundIntersections.length >= 2) {
+      const epsilon = 0.1;
+      const first = limitedSoundIntersections[0];
+      const allSamePoint = limitedSoundIntersections.every(
+        (point) => Math.abs(point.x - first.x) < epsilon && Math.abs(point.y - first.y) < epsilon,
+      );
+
+      if (!allSamePoint) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Check if actor has Silence effect active
    * @private
    * @param {Actor} actor

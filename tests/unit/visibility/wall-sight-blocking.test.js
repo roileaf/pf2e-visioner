@@ -763,4 +763,48 @@ describe('Wall Sight Blocking Fix', () => {
       expect(result).toBe(true);
     });
   });
+
+  describe('isSoundBlocked - creatures larger than one square', () => {
+    function makeSizedToken({ id, cx, cy, squares }) {
+      const size = squares * 100;
+      return {
+        center: { x: cx, y: cy },
+        vision: null,
+        shape: null,
+        actor: { system: { perception: { vision: true }, traits: { size: { value: 'med' } } } },
+        document: { id, x: cx - size / 2, y: cy - size / 2, width: squares, height: squares, elevation: 0 },
+      };
+    }
+
+    const pillar = () => makeWall({ sound: CONST.WALL_SENSE_TYPES.NORMAL, c: [300, -20, 300, 20] });
+    const fullWall = () => makeWall({ sound: CONST.WALL_SENSE_TYPES.NORMAL, c: [300, -1000, 300, 1000] });
+
+    test('a gargantuan listener still hears past a thin pillar on its center line', () => {
+      const observer = makeSizedToken({ id: 'garg-listener', cx: 0, cy: 0, squares: 4 });
+      const target = makeSizedToken({ id: 'garg-source', cx: 600, cy: 0, squares: 1 });
+      global.canvas.walls.placeables = [pillar()];
+      expect(visionAnalyzer.isSoundBlocked(observer, target)).toBe(false);
+    });
+
+    test('a gargantuan listener behind a full sound wall hears nothing', () => {
+      const observer = makeSizedToken({ id: 'garg-listener-wall', cx: 0, cy: 0, squares: 4 });
+      const target = makeSizedToken({ id: 'garg-source-wall', cx: 600, cy: 0, squares: 1 });
+      global.canvas.walls.placeables = [fullWall()];
+      expect(visionAnalyzer.isSoundBlocked(observer, target)).toBe(true);
+    });
+
+    test('a large source is heard past a thin pillar by a medium listener', () => {
+      const observer = makeSizedToken({ id: 'med-listener', cx: 0, cy: 0, squares: 1 });
+      const target = makeSizedToken({ id: 'large-source', cx: 600, cy: 0, squares: 2 });
+      global.canvas.walls.placeables = [makeWall({ sound: CONST.WALL_SENSE_TYPES.NORMAL, c: [590, -20, 590, 20] })];
+      expect(visionAnalyzer.isSoundBlocked(observer, target)).toBe(false);
+    });
+
+    test('two medium creatures are still deafened by a pillar on their center line', () => {
+      const observer = makeSizedToken({ id: 'med-listener-2', cx: 0, cy: 0, squares: 1 });
+      const target = makeSizedToken({ id: 'med-source-2', cx: 600, cy: 0, squares: 1 });
+      global.canvas.walls.placeables = [pillar()];
+      expect(visionAnalyzer.isSoundBlocked(observer, target)).toBe(true);
+    });
+  });
 });

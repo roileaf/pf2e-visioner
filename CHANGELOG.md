@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- **Large creatures are no longer deafened by thin pillars.** Hearing was tested with a single line from the listener's center to the sound's center, so a one-square sound-blocking pillar between them cut off all sound, and a gargantuan creature flipped between hidden and undetected every 5 feet it moved. For creatures bigger than one square, hearing now samples points across the whole space, and sound is blocked only when every line is blocked. Medium and smaller creatures are unchanged.
+
 ## [8.15.0] - 2026-11-12
 
 ### Added
