@@ -19,6 +19,7 @@ import { legacyLevelsFloorBlocksSightBetween } from './Detection/legacy-levels-l
 import { VisionAnalyzer } from '../visibility/auto-visibility/VisionAnalyzer.js';
 import { isVisualSenseType } from '../visibility/StatelessVisibilityCalculator.js';
 import { isPartyActorToken } from '../utils/token-actor.js';
+import { isScentBlocked } from '../helpers/scent-wall-utils.js';
 import { releaseDetectionFilterMesh, suppressDetectionFilterMesh } from './Detection/detection-filter-mesh-suppression.js';
 import { hasGmObserverHiddenPresentation } from './GmObserverView/gm-observer-view.js';
 import {
@@ -169,6 +170,7 @@ export function impreciselySensedOutOfSight(observer, target) {
       if (!inRange(senseData)) continue;
       if (senseType === 'hearing' && invisible) continue;
       if (senseType === 'hearing' && analyzer.isSoundBlocked(observer, target)) continue;
+      if (senseType === 'scent' && isScentBlocked(observer, target)) continue;
       return true;
     }
     // The analyzer already includes implicit hearing, its scene range, and deafened restrictions.
