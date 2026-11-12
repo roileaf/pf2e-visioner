@@ -161,3 +161,98 @@ export async function runBlankPcNpcSymmetryTest({
     results,
   };
 }
+
+const HP_EXPECTED_EXCLUDED = {
+  npcHealthy: false,
+  npcDown: true,
+  pcReal: false,
+  pcDown: true,
+  pcBlank: false,
+};
+
+const HP_POSITIONS = { npcHealthy: [3, 3], npcDown: [9, 3], pcReal: [3, 9], pcDown: [9, 9], pcBlank: [6, 12] };
+
+function worldCharacterWithHp() {
+  return game.actors.find(
+    (a) => a.type === 'character' && !a.name.startsWith(TAG) && Number(a.system?.attributes?.hp?.max) > 0,
+  );
+}
+
+async function cloneActor(source, key) {
+  return source.clone({ name: `${TAG} ${key}`, folder: null }, { save: true });
+}
+
+async function createHpActors() {
+  const source = worldCharacterWithHp();
+  if (!source) throw new Error('no world character with hit points to clone');
+  const created = await game.actors.documentClass.createDocuments([
+    { name: `${TAG} npcHealthy`, type: 'npc' },
+    { name: `${TAG} npcDown`, type: 'npc' },
+    { name: `${TAG} pcBlank`, type: 'character' },
+  ]);
+  const actors = Object.fromEntries(created.map((a) => [a.name.replace(`${TAG} `, ''), a]));
+  actors.pcReal = await cloneActor(source, 'pcReal');
+  actors.pcDown = await cloneActor(source, 'pcDown');
+  await actors.npcDown.update({ 'system.attributes.hp.value': 0 });
+  await actors.pcDown.update({ 'system.attributes.hp.value': 0 });
+  return { actors, sourceName: source.name };
+}
+
+async function createHpScene(actors, gridSize) {
+  const lighting = { key: 'hp', darknessLevel: 1, globalLight: { enabled: false } };
+  const scene = await game.scenes.documentClass.create(sceneData(gridSize, lighting));
+  const keys = Object.keys(HP_POSITIONS);
+  const data = [];
+  for (const key of keys) data.push(await tokenData(actors[key], HP_POSITIONS[key], gridSize));
+  const created = await scene.createEmbeddedDocuments('Token', data);
+  return { scene, tokenIds: Object.fromEntries(keys.map((key, i) => [key, created[i].id])) };
+}
+
+function hpOf(token) {
+  const hp = token.actor?.system?.attributes?.hp;
+  return `${hp?.value}/${hp?.max}`;
+}
+
+async function exclusionRow(key, token, exclusion) {
+  const excluded = exclusion.isExcludedToken(token);
+  return { key, hp: hpOf(token), excluded, expected: HP_EXPECTED_EXCLUDED[key], ok: excluded === HP_EXPECTED_EXCLUDED[key] };
+}
+
+function hasDarkvision(token) {
+  const senses = token.actor?.perception?.senses ?? [];
+  return senses.some?.((s) => String(s.type).includes('darkvision')) ?? false;
+}
+
+async function healthyPairCheck(tokenIds) {
+  const pc = canvas.tokens.get(tokenIds.pcReal);
+  const npc = canvas.tokens.get(tokenIds.npcHealthy);
+  const pcToNpc = await directVisibility(pc, npc);
+  const npcToPc = await directVisibility(npc, pc);
+  const pcDarkvision = hasDarkvision(pc);
+  const expectedPcToNpc = pcDarkvision ? 'observed' : 'hidden';
+  return { pcDarkvision, pcToNpc, npcToPc, ok: pcToNpc === expectedPcToNpc && npcToPc === 'hidden' };
+}
+
+export async function runHpDefeatedTest({ gridSize = 100, settleMs = 2500, keepScene = false } = {}) {
+  if (!game.user.isGM) return { pass: false, error: 'run as a GM' };
+  const previousScene = canvas.scene;
+  const { actors, sourceName } = await createHpActors();
+  const { scene, tokenIds } = await createHpScene(actors, gridSize);
+  try {
+    await scene.view();
+    await waitForCanvasScene(scene.id);
+    await sleep(settleMs);
+    const { ExclusionManager } = await import('../../scripts/visibility/auto-visibility/core/ExclusionManager.js');
+    const exclusion = new ExclusionManager();
+    const rows = [];
+    for (const [key, id] of Object.entries(tokenIds)) rows.push(await exclusionRow(key, canvas.tokens.get(id), exclusion));
+    const pair = await healthyPairCheck(tokenIds);
+    return { pass: rows.every((r) => r.ok) && pair.ok, clonedFrom: sourceName, rows, pair };
+  } finally {
+    if (previousScene) await previousScene.view();
+    if (!keepScene) {
+      await scene.delete();
+      await game.actors.documentClass.deleteDocuments(Object.values(actors).map((a) => a.id));
+    }
+  }
+}
