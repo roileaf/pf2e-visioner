@@ -114,4 +114,26 @@ describe('Token HUD buttons', () => {
 
     expect(root.querySelector('[data-action="pf2e-visioner-search-exploration"]')).not.toBeNull();
   });
+
+  test('hides Search exploration button but keeps visibility button when search HUD setting is off', async () => {
+    game.settings.set('pf2e-visioner', 'useHudButton', true);
+    game.settings.set('pf2e-visioner', 'searchHudButton', false);
+    const hiddenNpc = createMockToken({
+      actor: createMockActor({
+        type: 'npc',
+        conditions: { conditions: [{ slug: 'undetected' }] },
+      }),
+    });
+    const root = document.createElement('div');
+    const column = document.createElement('div');
+    column.className = 'col left';
+    root.appendChild(column);
+
+    const { onRenderTokenHUD } = await import('../../../scripts/services/token-hud.js');
+    onRenderTokenHUD({ object: hiddenNpc, render: jest.fn() }, root);
+    game.settings.set('pf2e-visioner', 'searchHudButton', true);
+
+    expect(root.querySelector('[data-action="pf2e-visioner-search-exploration"]')).toBeNull();
+    expect(root.querySelector('[data-action="pf2e-visioner-visibility"]')).not.toBeNull();
+  });
 });

@@ -17,6 +17,7 @@ const SETTINGS_GROUPS = {
       title: 'General UI',
       keys: [
         'useHudButton',
+        'searchHudButton',
         'showVisionerSceneTools',
         'showQuickEditTool',
         'hideHiddenTokenHealthEstimates',

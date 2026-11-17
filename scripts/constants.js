@@ -1063,6 +1063,16 @@ export const DEFAULT_SETTINGS = {
     default: true,
   },
 
+  searchHudButton: {
+    name: 'PF2E_VISIONER.SETTINGS.SEARCH_HUD_BUTTON.name',
+    hint: 'PF2E_VISIONER.SETTINGS.SEARCH_HUD_BUTTON.hint',
+    scope: 'world',
+    config: true,
+    restricted: true,
+    type: Boolean,
+    default: true,
+  },
+
   // Show Visioner tools in Tokens and Walls scene controls
   showVisionerSceneTools: {
     name: 'PF2E_VISIONER.SETTINGS.VISIONER_SCENE_CONTROLS.name',

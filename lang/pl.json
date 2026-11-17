@@ -905,6 +905,10 @@
         "name": "Przycisk HUD tokenu",
         "hint": "Dodaje przycisk do interfejsu HUD tokenów Foundry, służący do otwierania menedżera Visioner. Po wyłączeniu tej funkcji, po wybraniu tokenu pojawi się ruchomy, pływający przycisk."
       },
+      "SEARCH_HUD_BUTTON": {
+        "name": "Przycisk HUD eksploracji Search",
+        "hint": "Pokazuje przycisk lupy w HUD tokenu ukrytych NPC, łupów i pułapek z ST Skradania, do rzutu eksploracji Search. Wymaga ustawienia Przycisk HUD tokenu"
+      },
       "VISIONER_SCENE_CONTROLS": {
         "name": "Sterowanie sceną Visioner",
         "hint": "Dodaje określone funkcje Visioner jako przyciski do elementów sterujących tokenami i elementami sterującymi ścianą na lewym pasku bocznym. Jeśli funkcja jest wyłączona, nadal można uzyskać do niej dostęp za pośrednictwem indywidualnych ustawień tokenów / ściany lub skrótów klawiszowych."

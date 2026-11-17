@@ -46,7 +46,8 @@ function getHudLeftColumn(html) {
 
 function renderSearchExplorationButton(app, html) {
   const token = app.object;
-  if (!token || !game.user.isGM || !isSearchExplorationHudTarget(token)) return;
+  if (!token || !game.user.isGM || !game.settings.get(MODULE_ID, 'searchHudButton')) return;
+  if (!isSearchExplorationHudTarget(token)) return;
 
   const column = getHudLeftColumn(html);
   if (!column) {

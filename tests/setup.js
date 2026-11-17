@@ -24,6 +24,7 @@ global.game = {
       const defaults = {
         'pf2e-visioner': {
           defaultEncounterFilter: false,
+          searchHudButton: true,
           ignoreAllies: false,
           colorblindMode: 'none',
           hiddenWallsEnabled: true,

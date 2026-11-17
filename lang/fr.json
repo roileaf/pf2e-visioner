@@ -323,6 +323,10 @@
         "name": "(FR) Bouton HUD du jeton",
         "hint": "(FR) Affiche un bouton Visioner dans le HUD du jeton"
       },
+      "SEARCH_HUD_BUTTON": {
+        "name": "(FR) Bouton HUD Fouille",
+        "hint": "(FR) Affiche le bouton loupe dans le HUD du jeton pour lancer la Fouille en exploration"
+      },
       "VISIONER_SCENE_CONTROLS": {
         "name": "(FR) Contrôles de scène Visioner",
         "hint": "(FR) Affiche les boutons Visioner dans les barres d'outils Scènes"
