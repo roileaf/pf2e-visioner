@@ -1,5 +1,11 @@
 # Changelog
 
+## [8.15.3] - 2026-11-17
+
+### Added
+
+- **Separate setting for the Search exploration HUD button.** The magnifier button on hidden NPCs, loot and hazards shared the "Token HUD Button" setting with the Visibility Manager button, so it could only be hidden together with it. The new "Search Exploration HUD Button" setting hides just the magnifier.
+
 ## [8.15.2] - 2026-11-12
 
 ### Fixed
