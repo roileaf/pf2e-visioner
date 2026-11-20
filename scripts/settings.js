@@ -35,6 +35,7 @@ const SETTINGS_GROUPS = {
         'ignoreAllies',
         'hideFoundryHiddenTokens',
         'sneakAllowHiddenUndetectedEndPosition',
+        'stealthBreakingActionConsequences',
       ],
     },
   ],

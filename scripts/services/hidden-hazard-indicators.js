@@ -1,5 +1,6 @@
 import { getVisibilityBetween } from '../stores/visibility-map.js';
 import { getDefaultPlayerVisibility } from './initial-scene-hidden-setup.js';
+import { gmObserverView } from './GmObserverView/gm-observer-view.js';
 
 const UNDETECTED_HAZARD_INDICATOR_COLOR = 0xf44336;
 const HIDDEN_HAZARD_INDICATOR_KEY = '_pvHiddenHazardIndicator';
@@ -75,9 +76,10 @@ export function shouldShowHiddenHazardIndicator(
     observers = getHiddenHazardObservers(),
     getVisibility = getVisibilityBetween,
     getDefaultVisibility = getDefaultPlayerVisibility,
+    observerViewActive = gmObserverView.isActive(),
   } = {},
 ) {
-  if (!user?.isGM || scene?.tokenVision === false) return false;
+  if (!user?.isGM || scene?.tokenVision === false || observerViewActive) return false;
   return isHazardOrLootHiddenFromAnyObserver(token, observers, {
     getVisibility,
     getDefaultVisibility,

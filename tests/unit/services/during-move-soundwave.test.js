@@ -1260,6 +1260,52 @@ describe('refreshSoundwavesForActiveMovement (only mutates during a committed mo
     globalThis.CONFIG = savedConfig;
   });
 
+  test('does not re-read Core visibility per frame for a ripple target that is not hard-hidden', async () => {
+    const savedConfig = globalThis.CONFIG;
+    const soundwaveFilter = {};
+    globalThis.CONFIG = {
+      Canvas: {
+        detectionModes: {
+          hearing: { constructor: { getDetectionFilter: () => soundwaveFilter } },
+        },
+      },
+    };
+    const observer = {
+      document: { id: 'obs' },
+      vision: { los: { contains: () => false } },
+    };
+    const target = makeTarget();
+    target.visible = true;
+    target.renderable = true;
+    target.detectionFilter = null;
+    target.mesh = { visible: true, renderable: true, alpha: 1 };
+    let coreVisibilityReads = 0;
+    Object.defineProperty(target, 'isVisible', {
+      configurable: true,
+      get() {
+        coreVisibilityReads += 1;
+        return true;
+      },
+    });
+    globalThis.canvas = { tokens: { placeables: [target], preview: { children: [] } } };
+    const mod = await loadWith({
+      pendingMovement: true,
+      observers: [observer],
+      getVisibility: () => 'hidden',
+      isHardHidden: () => false,
+    });
+
+    mod.refreshSoundwavesForActiveMovement();
+    expect(target.detectionFilter).toBe(soundwaveFilter);
+    coreVisibilityReads = 0;
+
+    mod.refreshSoundwavesForActiveMovement();
+    mod.refreshSoundwavesForActiveMovement(target);
+
+    expect(coreVisibilityReads).toBe(0);
+    globalThis.CONFIG = savedConfig;
+  });
+
   test('leaves Core movement visibility on the controlled token untouched', async () => {
     const target = makeTarget();
     target.controlled = true;

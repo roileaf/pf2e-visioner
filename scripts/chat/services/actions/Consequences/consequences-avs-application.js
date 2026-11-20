@@ -11,6 +11,7 @@ export async function isConsequencesAvsEnabled() {
 }
 
 export async function requestConsequencesTakeCoverExpiration(actionData) {
+  if (actionData?.attackData?.stealthBreak) return;
   try {
     const attacker = actionData?.actorToken || actionData?.actor;
     if (!attacker?.actor) return;

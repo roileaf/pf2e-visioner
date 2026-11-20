@@ -346,7 +346,8 @@
         "TACTICAL_ADVICE": "Porady taktyczne",
         "POSITIONING": "Pozycjonowanie",
         "CONDITIONS": "Stany"
-      }
+      },
+      "STEALTH_BREAK_CONSEQUENCES": "Wyniki przerwania ukrycia"
     },
     "BUTTONS": {
       "KEEN_EYES": "Bystre oczy",
@@ -1034,6 +1035,10 @@
       "VISIONER_QUICK_EDIT_TOOL": {
         "name": "Narzędzie szybkiej edycji Visioner",
         "hint": "Dodaje przycisk do paska bocznego narzędzi tokenów, aby otworzyć narzędzie Szybkiej Edycji Visioner. Jeśli jest wyłączone, dostęp do narzędzia można uzyskać za pomocą skrótu klawiszowego."
+      },
+      "STEALTH_BREAKING_ACTION_CONSEQUENCES": {
+        "name": "Ujawniaj ukryte stworzenia po innych akcjach",
+        "hint": "Gdy ukryte lub niewykryte stworzenie wykona akcję, zaklęcie lub test umiejętności inny niż Ukrycie się, Skradanie lub Krok, na karcie czatu pojawi się panel przerwania ukrycia, aby MG mógł ujawnić je stworzeniom, przed którymi się ukrywało. Ukrycie wynikające z ciemności lub zasłonięcia pozostaje w gestii AVS."
       }
     },
     "UI": {
@@ -1298,7 +1303,10 @@
       "APPLY_BUTTON_LABEL": "Zastosuj",
       "REVERT_BUTTON_LABEL": "Przywróć",
       "HIDDEN_REACTION_LABEL": "Ukryty (Reakcja)",
-      "HIDDEN_SENSE_UNSEEN_LABEL": "Ukryty (Wyczuwanie Niewidzialnego)"
+      "HIDDEN_SENSE_UNSEEN_LABEL": "Ukryty (Wyczuwanie Niewidzialnego)",
+      "STEALTH_BREAK_TITLE": "Ukrycie przerwane",
+      "STEALTH_BREAK_OPEN": "Otwórz przerwanie ukrycia",
+      "STEALTH_BREAK_TOOLTIP": "Podgląd i ujawnienie ukrytego lub niewykrytego stworzenia, które wykonało akcję inną niż Ukrycie się, Skradanie lub Krok"
     },
     "WALL": {
       "VISIBLE_TO_YOU": "Ukryta ściana",

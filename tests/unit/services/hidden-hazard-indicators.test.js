@@ -226,4 +226,39 @@ describe('hidden hazard indicators', () => {
     expect(hazard._pvHiddenHazardIndicator).toBe(replacement);
     expect(pixi.Graphics).toHaveBeenCalledTimes(1);
   });
+
+  test('hides GM marker while GM Observer View is active', () => {
+    const hazard = token('hazard', 'hazard');
+    const observer = token('pc', 'character');
+    const options = {
+      user: gm,
+      scene,
+      observers: [observer],
+      getVisibility: () => 'undetected',
+    };
+
+    expect(shouldShowHiddenHazardIndicator(hazard, { ...options, observerViewActive: true })).toBe(
+      false,
+    );
+    expect(shouldShowHiddenHazardIndicator(hazard, { ...options, observerViewActive: false })).toBe(
+      true,
+    );
+  });
+
+  test('removes existing marker when GM Observer View turns on', () => {
+    const hazard = token('hazard', 'hazard');
+    const pixi = { Graphics: jest.fn(() => graphics()) };
+    const options = {
+      user: gm,
+      scene,
+      pixi,
+      canvasLayer: { grid: { size: 100 } },
+      observers: [token('pc', 'character')],
+      getVisibility: () => 'undetected',
+    };
+
+    expect(syncHiddenHazardIndicator(hazard, { ...options, observerViewActive: false })).toBe(true);
+    expect(syncHiddenHazardIndicator(hazard, { ...options, observerViewActive: true })).toBe(false);
+    expect(hazard._pvHiddenHazardIndicator).toBeNull();
+  });
 });

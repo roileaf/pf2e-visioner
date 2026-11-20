@@ -591,6 +591,16 @@ export const DEFAULT_SETTINGS = {
     default: false,
   },
 
+  stealthBreakingActionConsequences: {
+    name: 'PF2E_VISIONER.SETTINGS.STEALTH_BREAKING_ACTION_CONSEQUENCES.name',
+    hint: 'PF2E_VISIONER.SETTINGS.STEALTH_BREAKING_ACTION_CONSEQUENCES.hint',
+    scope: 'world',
+    config: true,
+    restricted: true,
+    type: Boolean,
+    default: true,
+  },
+
   enableHoverTooltips: {
     name: 'PF2E_VISIONER.SETTINGS.ENABLE_HOVER_TOOLTIPS.name',
     hint: 'PF2E_VISIONER.SETTINGS.ENABLE_HOVER_TOOLTIPS.hint',

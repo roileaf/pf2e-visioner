@@ -5,7 +5,7 @@
  * entering and exiting regions.
  */
 
-import { isPrimaryGM } from '../services/gm-election.js';
+import { isScenePrimaryGM } from '../services/gm-election.js';
 import AvsOverrideManager from '../chat/services/infra/AvsOverrideManager.js';
 import { VISIBILITY_STATES } from '../constants.js';
 import { segmentsIntersect } from '../helpers/geometry-utils.js';
@@ -80,7 +80,7 @@ export class VisibilityRegionBehavior extends RegionBehaviorBase {
   }
 
   async _handleRegionEvent(event) {
-    if (!isPrimaryGM()) return;
+    if (!this._isSceneAvsWriter()) return;
 
     const name = event?.name ?? event?.type;
     if (!name) return;
@@ -350,7 +350,7 @@ export class VisibilityRegionBehavior extends RegionBehaviorBase {
         };
         this._pendingCanvasReadyHook = Hooks.once('canvasReady', () => {
           clear();
-          if (canvas.scene?.id !== sceneId || !isPrimaryGM() ||
+          if (canvas.scene?.id !== sceneId || !this._isSceneAvsWriter() ||
             (this.region?.id && !canvas.scene?.regions?.has(this.region.id))) {
             this._pendingTokenEvents.clear();
             return;
@@ -515,8 +515,12 @@ export class VisibilityRegionBehavior extends RegionBehaviorBase {
     });
   }
 
+  _isSceneAvsWriter() {
+    return isScenePrimaryGM(this.region?.parent?.id ?? canvas.scene?.id);
+  }
+
   async _applyVisibilityUpdates(updates) {
-    if (!isPrimaryGM()) return;
+    if (!this._isSceneAvsWriter()) return;
 
     if (!updates || updates.length === 0) return;
     try {

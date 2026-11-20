@@ -369,7 +369,8 @@
         "TACTICAL_ADVICE": "Tactical Advice",
         "POSITIONING": "Positioning",
         "CONDITIONS": "Conditions"
-      }
+      },
+      "STEALTH_BREAK_CONSEQUENCES": "Stealth Break Results"
     },
     "BUTTONS": {
       "KEEN_EYES": "Keen Eyes",
@@ -1164,6 +1165,10 @@
       "VISIONER_QUICK_EDIT_TOOL": {
         "name": "Visioner Quick Edit Tool",
         "hint": "Adds a button to Token Controls sidebar to open the Visioner Quick Edit tool. If disabled, the tool can be accessed with a keybind"
+      },
+      "STEALTH_BREAKING_ACTION_CONSEQUENCES": {
+        "name": "Reveal stealthed creatures after other actions",
+        "hint": "When a hidden or undetected creature posts an action, spell or skill check other than Hide, Sneak or Step, show a stealth-break panel on its chat card so the GM can reveal it to the creatures it was hiding from. Hidden or undetected from darkness or concealment is left to AVS."
       }
     },
     "UI": {
@@ -1442,7 +1447,10 @@
       "APPLY_BUTTON_LABEL": "Apply",
       "REVERT_BUTTON_LABEL": "Revert",
       "HIDDEN_REACTION_LABEL": "Hidden (Reaction)",
-      "HIDDEN_SENSE_UNSEEN_LABEL": "Hidden (Sense the Unseen)"
+      "HIDDEN_SENSE_UNSEEN_LABEL": "Hidden (Sense the Unseen)",
+      "STEALTH_BREAK_TITLE": "Stealth Broken",
+      "STEALTH_BREAK_OPEN": "Open Stealth Break",
+      "STEALTH_BREAK_TOOLTIP": "Preview and reveal a hidden or undetected creature that acted other than Hide, Sneak or Step"
     },
     "WALL": {
       "VISIBLE_TO_YOU": "Hidden Wall",

@@ -272,6 +272,10 @@
             "OPEN_RESULTS_TOOLTIP": "打开分神结果对话框，以进行单独或批量能见度变更"
         },
         "SETTINGS": {
+          "STEALTH_BREAKING_ACTION_CONSEQUENCES": {
+            "name": "其他行动后揭示潜行生物",
+            "hint": "当隐藏或未察觉的生物发布躲藏、潜行或跨步以外的行动、法术或技能检定时，在其聊天卡上显示潜行中断面板，让GM可以向其躲避的生物揭示它。由黑暗或遮蔽造成的隐藏或未察觉仍由AVS处理。"
+          },
             "ENABLE_HOVER_TOOLTIPS": {
                 "name": "启用悬停提示框",
                 "hint": "悬停于指示物时显示能见度状态提示信息"
@@ -842,6 +846,9 @@
             "REVERT_ALL_BUTTON": "全部撤销",
             "REVERT_TO_ORIGINAL_COVER": "恢复为原掩蔽状态",
             "APPLY_WITHOUT_DIALOG": "不打开对话框并应用所有经计算的能见度变更",
+            "STEALTH_BREAK_TITLE": "潜行中断",
+            "STEALTH_BREAK_OPEN": "打开潜行中断",
+            "STEALTH_BREAK_TOOLTIP": "预览并揭示进行了躲藏、潜行或跨步以外行动的隐藏或未察觉生物",
             "STEALTH_VS_PERCEPTION": "隐秘 vs 察觉",
             "APPLY_COVER_CHANGES_WITHOUT_DIALOG": "不打开对话框并应用所有经计算的掩蔽变更",
             "NO_COVER_OPTION": "无掩蔽",
@@ -1226,6 +1233,7 @@
             "WALL_QUICK": "PF2E Visioner：墙体设置",
             "DARKNESS_MODE": "PF2E Visioner：设置黑暗模式",
             "ATTACK_CONSEQUENCES": "攻击后果结果",
+            "STEALTH_BREAK_CONSEQUENCES": "潜行中断结果",
             "CREATE_DIVERSION_RESULTS": "分神结果",
             "SNEAK_RESULTS": "潜行结果",
             "RECOMMENDATIONS": {

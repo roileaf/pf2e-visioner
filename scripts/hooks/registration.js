@@ -60,6 +60,7 @@ import {
   syncHiddenHazardIndicator,
 } from '../services/hidden-hazard-indicators.js';
 import { gmObserverView } from '../services/GmObserverView/gm-observer-view.js';
+import { registerAvsWriterHandoffHooks } from '../services/avs-writer-handoff.js';
 import { registerPersistentSequencerEffectLayeringHooks } from '../services/sequencer-persistent-effect-layering.js';
 import { registerAttachedEffectVisibility } from '../services/sequencer-attached-effect-visibility.js';
 
@@ -75,6 +76,8 @@ export async function registerHooks() {
   registerAttachedEffectVisibility();
   registerPf2eHudTakeCoverIntegration();
   registerPf2eHudHealthStatusIntegration();
+
+  registerAvsWriterHandoffHooks();
 
   Hooks.on('ready', onReady);
   Hooks.on('canvasReady', onCanvasReady);

@@ -3,6 +3,16 @@
  * Create a Diversion, and damage consequences.
  */
 import { overrideToDisplayVisibility } from '../../visibility/perception-profile.js';
+import { isStealthBreakingMessage } from './stealth-breaking-action.js';
+
+function tokenHasHiddenOverride(token) {
+  const flags = token?.document?.flags?.['pf2e-visioner'] || {};
+  return Object.entries(flags).some(
+    ([k, v]) =>
+      k.startsWith('avs-override-from-') &&
+      ['hidden', 'undetected', 'unnoticed'].includes(overrideToDisplayVisibility(v)),
+  );
+}
 
 function listFrom(value) {
   if (!value) return [];
@@ -149,6 +159,7 @@ export async function extractActionData(message) {
   // Debug logging for action type detection
 
   let actionType = null;
+  let isStealthBreak = false;
   if (isSeekAction || isSearchExplorationCheck) actionType = 'seek';
   else if (isPointOutAction) actionType = 'point-out';
   else if (isSneakAction)
@@ -158,11 +169,16 @@ export async function extractActionData(message) {
   else if (isTakeCoverAction) actionType = 'take-cover';
   else if (isAttackRoll && !isDamageTakenMessage) {
     actorToken = resolveActorToken();
-    const flags = actorToken?.document?.flags?.['pf2e-visioner'] || {};
-    const hasHiddenOverride = Object.entries(flags).some(([k, v]) =>
-      k.startsWith('avs-override-from-') &&
-      ['hidden', 'undetected', 'unnoticed'].includes(overrideToDisplayVisibility(v)));
-    if (hasHiddenOverride) actionType = 'consequences';
+    if (tokenHasHiddenOverride(actorToken)) actionType = 'consequences';
+  } else if (
+    !isDamageTakenMessage &&
+    isStealthBreakingMessage({ context, origin, contextOptions, originRollOptions })
+  ) {
+    actorToken = resolveActorToken();
+    if (tokenHasHiddenOverride(actorToken)) {
+      actionType = 'consequences';
+      isStealthBreak = true;
+    }
   }
 
   if (!actionType) return null;
@@ -179,7 +195,9 @@ export async function extractActionData(message) {
 
   // Add attack roll data for consequences
   if (actionType === 'consequences') {
-    data.attackData = { isAttackRoll: true };
+    data.attackData = isStealthBreak
+      ? { isAttackRoll: false, stealthBreak: true }
+      : { isAttackRoll: true };
   }
 
   if (actionType === 'seek' && isSearchExplorationCheck) {

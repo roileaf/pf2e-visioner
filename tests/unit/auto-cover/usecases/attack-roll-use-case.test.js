@@ -301,6 +301,15 @@ describe('AttackRollUseCase', () => {
 
       await expect(attackRollUseCase.handlePreCreateChatMessage(mockData)).resolves.toBeUndefined();
     });
+
+    test('skips cover detection for an attack rolled with nothing targeted', async () => {
+      attackRollUseCase._resolveTargetTokenIdFromData.mockReturnValue(null);
+
+      await attackRollUseCase.handlePreCreateChatMessage(mockData);
+
+      expect(attackRollUseCase._detectCover).not.toHaveBeenCalled();
+      expect(attackRollUseCase.autoCoverSystem.getOverrideManager).not.toHaveBeenCalled();
+    });
   });
 
   describe('handleRenderChatMessage', () => {

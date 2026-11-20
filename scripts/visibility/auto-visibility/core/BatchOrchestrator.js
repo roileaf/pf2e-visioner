@@ -9,7 +9,7 @@ import {
   flushDetectionBatch,
   startDetectionBatch,
 } from '../../../stores/detection-map.js';
-import { isPrimaryGM } from '../../../services/gm-election.js';
+import { isCurrentSceneAvsWriter, isScenePrimaryGM } from '../../../services/gm-election.js';
 import { hasActivePendingTokenMovement as defaultHasActivePendingTokenMovement } from '../../../services/movement-tracking.js';
 import { isSceneTokenVisionDisabled } from '../../../services/scene-token-vision.js';
 import { getLogger } from '../../../utils/logger.js';
@@ -493,7 +493,7 @@ export class BatchOrchestrator {
    * @returns {Promise<void>}
    */
   async processBatch(changedTokens, options = {}) {
-    if (!isPrimaryGM()) return;
+    if (!isCurrentSceneAvsWriter()) return;
     const admissionPlan = buildProcessBatchAdmissionPlan({
       changedTokens,
       processingBatch: this.processingBatch,
@@ -527,6 +527,9 @@ export class BatchOrchestrator {
     const automaticEnabledAtStart = game.settings.get(this.moduleId, 'autoVisibilityEnabled') === true;
     const automaticDisabledDuringBatch = () => batchGenerationAtStart !== this._batchGeneration ||
       (automaticEnabledAtStart && game.settings.get(this.moduleId, 'autoVisibilityEnabled') === false);
+    const batchSceneId = canvas?.scene?.id;
+    const lostSceneWriterDuringBatch = () =>
+      canvas?.scene?.id !== batchSceneId || !isScenePrimaryGM(batchSceneId);
 
     // Check if AVS is disabled for the current scene
     const disableAVS = canvas?.scene?.getFlag?.(this.moduleId, 'disableAVS');
@@ -728,7 +731,7 @@ export class BatchOrchestrator {
       );
       timings.batchProcessing = this.nowProvider() - stageStart;
       timings.detailedBatchTimings = batchResult.detailedTimings || {};
-      if (automaticDisabledDuringBatch() || !isPrimaryGM()) {
+      if (automaticDisabledDuringBatch() || lostSceneWriterDuringBatch()) {
         detectionBatch.discard();
         return;
       }
@@ -756,7 +759,7 @@ export class BatchOrchestrator {
 
       stageStart = this.nowProvider();
       await this.workflowFactory.runOverrideValidationBeforeResultApplication({ isMovementBatch });
-      if (automaticDisabledDuringBatch() || !isPrimaryGM()) {
+      if (automaticDisabledDuringBatch() || lostSceneWriterDuringBatch()) {
         detectionBatch.discard();
         return;
       }
@@ -1079,7 +1082,7 @@ export class BatchOrchestrator {
    * @private
    */
   async _syncEphemeralEffectsForUpdates(updates) {
-    if (!isPrimaryGM() || !updates || updates.length === 0) {
+    if (!isCurrentSceneAvsWriter() || !updates || updates.length === 0) {
       return;
     }
 

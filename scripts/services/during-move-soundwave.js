@@ -563,7 +563,11 @@ function reassertSoundwaveAfterCoreRefresh(token) {
   }
   if (!pendingMovementActive) return;
   if (filterOverrides.has(token)) reassertSoundwaveOverride(token);
-  if (activeSoundwaveTargets.has(token)) suppressCoreInvisibleHardHiddenTarget(token);
+  if (activeSoundwaveTargets.has(token)) suppressActiveTargetIfHardHidden(token);
+}
+
+function suppressActiveTargetIfHardHidden(target) {
+  if (targetIsHardHiddenFromCurrentView(target)) suppressCoreInvisibleHardHiddenTarget(target);
 }
 
 export function refreshSoundwavesForActiveMovement(refreshedToken = null) {
@@ -607,7 +611,7 @@ export function refreshSoundwavesForActiveMovement(refreshedToken = null) {
   // Reconcile only targets known to have carried a ripple; this keeps expensive discovery off the
   // per-frame path for every other scene token.
   for (const target of activeSoundwaveTargets) {
-    suppressCoreInvisibleHardHiddenTarget(target);
+    suppressActiveTargetIfHardHidden(target);
   }
 
   const now = globalThis.performance?.now?.() ?? 0;

@@ -542,6 +542,10 @@ class AttackRollUseCase extends BaseAutoCoverUseCase {
 
     this._storeOffGuardSuppressionChatInfo(data, doc, attacker, target);
 
+    // An attack rolled with nothing targeted has no cover to work out (as in handleCheckDialog and
+    // handleCheckRoll); every step below is keyed to the attacker-target pair.
+    if (!attacker || !target) return;
+
     // Determine base cover state (manual token cover first, then auto-detection)
     const manualCover = this._getFixedCover(attacker, target);
     let state = manualCover;

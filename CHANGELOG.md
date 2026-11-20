@@ -1,5 +1,18 @@
 # Changelog
 
+## [8.15.4] - 2026-11-20
+
+### Added
+
+- **Stealth break after other actions.** When a hidden or undetected creature posts an action, spell or skill check other than Hide, Sneak or Step, its chat card shows a Stealth Break panel, so the GM can preview and reveal it to the creatures it was hiding from. Hidden or undetected from darkness or concealment is left to AVS. The new "Reveal stealthed creatures after other actions" setting (on by default) turns it off.
+
+### Fixed
+
+- **No more "Missing attacker or target" warning for an untargeted attack.** An attack rolled with nothing targeted logged this warning in the console every time. With no target there is no cover to work out, so Visioner now skips the check, as it already did in the roll dialog.
+- **Soundwave during movement only hides what you can't see.** A creature caught in a soundwave was hidden from the current view even when that view could see it; it is now hidden only when it is actually hidden from that view.
+- **Hidden-hazard indicators stay off in GM Observer View.** While the GM views the scene as an observer, the GM-only hidden-hazard indicators are no longer drawn.
+- With two or more GMs connected, AVS now runs on the GM viewing each scene instead of only the single "active GM". Before, a second GM logged in on another scene (or in a background tab) could take over AVS, and visibility on the scene being played stopped updating, for example a creature moved into darkness stayed observed. GMs on different scenes now each keep their own scene up to date, and when a GM arrives on a scene and takes over, that scene is recalculated once.
+
 ## [8.15.3] - 2026-11-17
 
 ### Added

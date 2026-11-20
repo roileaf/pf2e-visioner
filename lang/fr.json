@@ -615,6 +615,10 @@
       "DISABLE_AVS_PER_SCENE": {
         "name": "(FR TODO) Disable AVS for this Scene",
         "hint": "(FR TODO) When enabled, the Auto-Visibility System will be disabled for this scene even if the global AVS is enabled."
+      },
+      "STEALTH_BREAKING_ACTION_CONSEQUENCES": {
+        "name": "Révéler les créatures furtives après d’autres actions",
+        "hint": "Quand une créature cachée ou non détectée publie une action, un sort ou un test de compétence autre que Se cacher, Être furtif ou Faire un pas, un panneau de rupture de furtivité apparaît sur sa carte de chat pour que le MJ puisse la révéler aux créatures dont elle se cachait. Caché ou non détecté dû à l’obscurité ou au camouflage reste géré par l’AVS."
       }
     },
     "UI": {
@@ -856,7 +860,10 @@
       "APPLY_BUTTON_LABEL": "(FR TODO) Apply",
       "REVERT_BUTTON_LABEL": "(FR TODO) Revert",
       "HIDDEN_REACTION_LABEL": "(FR TODO) Hidden (Reaction)",
-      "HIDDEN_SENSE_UNSEEN_LABEL": "(FR TODO) Hidden (Sense the Unseen)"
+      "HIDDEN_SENSE_UNSEEN_LABEL": "(FR TODO) Hidden (Sense the Unseen)",
+      "STEALTH_BREAK_TITLE": "Furtivité rompue",
+      "STEALTH_BREAK_OPEN": "Ouvrir la rupture de furtivité",
+      "STEALTH_BREAK_TOOLTIP": "Prévisualiser et révéler une créature cachée ou non détectée qui a agi autrement que Se cacher, Être furtif ou Faire un pas"
     },
     "WALL": {
       "VISIBLE_TO_YOU": "Mur caché",
@@ -1147,7 +1154,8 @@
         "TACTICAL_ADVICE": "Tactical Advice (FR TODO)",
         "POSITIONING": "Positioning (FR TODO)",
         "CONDITIONS": "Conditions (FR TODO)"
-      }
+      },
+      "STEALTH_BREAK_CONSEQUENCES": "Résultats de rupture de furtivité"
     },
     "BUTTONS": {
       "KEEN_EYES": "Keen Eyes (FR TODO)",
