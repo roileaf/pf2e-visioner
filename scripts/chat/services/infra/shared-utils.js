@@ -8,6 +8,7 @@ import { CoverModifierService } from '../../../services/CoverModifierService.js'
 import { refreshEveryonesPerception } from '../../../services/socket.js';
 import { updateTokenVisuals } from '../../../services/visual-effects.js';
 import { setVisibilityBetween } from '../../../utils.js';
+import { getLegacySceneTemplates } from '../../../utils/legacy-scene-templates.js';
 import { VisionAnalyzer } from '../../../visibility/auto-visibility/VisionAnalyzer.js';
 import AvsOverrideManager from './AvsOverrideManager.js';
 import { notify } from './notifications.js';
@@ -599,7 +600,7 @@ export function isTokenWithinTemplate(
     if (!center || !token) return false;
 
     if (messageId && actorTokenId) {
-      let template = canvas.scene?.templates?.find?.((t) => {
+      let template = getLegacySceneTemplates(canvas.scene).find((t) => {
         const f = t?.flags?.['pf2e-visioner'];
         return (
           (f?.seekPreviewManual || f?.seekTemplate) &&
@@ -708,7 +709,7 @@ export function filterOutcomesByTemplate(
 
     let template = null;
     if (messageId && actorTokenId) {
-      template = canvas.scene?.templates?.find?.((t) => {
+      template = getLegacySceneTemplates(canvas.scene).find((t) => {
         const f = t?.flags?.['pf2e-visioner'];
         return (
           (f?.seekPreviewManual || f?.seekTemplate) &&

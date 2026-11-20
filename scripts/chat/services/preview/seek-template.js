@@ -1,6 +1,7 @@
 // Facade around seek template helpers to keep UI layer clean
 
 import { MODULE_ID } from '../../../constants.js';
+import { getLegacySceneTemplates } from '../../../utils/legacy-scene-templates.js';
 
 const SEEK_TEMPLATE_PLACEMENT_LIMIT_SETTING = 'seekTemplateMaxPlacementDistance';
 
@@ -34,7 +35,7 @@ function getSceneRegionCollection() {
 }
 
 function getSceneTemplateCollection() {
-  return collectionToArray(canvas?.scene?.templates);
+  return getLegacySceneTemplates(canvas?.scene);
 }
 
 function getCanvasTemplatePlaceables() {

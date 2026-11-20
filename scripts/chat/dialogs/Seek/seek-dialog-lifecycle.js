@@ -1,9 +1,16 @@
+import { areMeasuredTemplatesRegions } from '../../../utils/legacy-scene-templates.js';
 import { hideSeekSensesTooltip } from './seek-senses-tooltip.js';
 
 export function cleanupSeekPreviewTemplate(app) {
   try {
     if (!app?.templateId || app.templateCenter || !canvas.scene) return;
 
+    if (areMeasuredTemplatesRegions()) {
+      if (canvas.scene.regions?.get?.(app.templateId)) {
+        canvas.scene.deleteEmbeddedDocuments('Region', [app.templateId]);
+      }
+      return;
+    }
     const doc =
       canvas.scene.templates?.get?.(app.templateId) ||
       canvas.scene.getEmbeddedDocument?.('MeasuredTemplate', app.templateId);
