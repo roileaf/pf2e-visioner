@@ -1,5 +1,11 @@
 # Changelog
 
+## [8.15.5] - 2026-11-20
+
+### Fixed
+
+- **No more "Scene#templates is deprecated" warning on Foundry v14.** Seek no longer reads the old measured template collection, which v14 replaced with regions. Closing the Seek preview now removes its region directly.
+
 ## [8.15.4] - 2026-11-20
 
 ### Added
