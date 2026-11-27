@@ -9,6 +9,7 @@ import autoCoverSystem from './cover/auto-cover/AutoCoverSystem.js';
 import { COVER_ADJUSTMENT_MODES } from './cover/cover-adjustments.js';
 import { scheduleCanvasPerceptionUpdate } from './helpers/perception-refresh.js';
 import { calculateRealDistanceInFeet } from './helpers/geometry-utils.js';
+import { isSightBlockedBetweenCenters } from './helpers/explain-line-of-sight.js';
 import { getCoverMap } from './stores/cover-map.js';
 import { VisionerTokenManager } from './managers/token-manager/TokenManager.js';
 import {
@@ -1995,11 +1996,7 @@ export class Pf2eVisionerApi {
       const targetLight = lightingCalc.getLightLevelAt(targetPos, targetToken);
 
       // Check line of sight
-      const ray = new foundry.utils.Ray(
-        { x: observerToken.center.x, y: observerToken.center.y },
-        { x: targetToken.center.x, y: targetToken.center.y },
-      );
-      const losResult = canvas.walls?.checkCollision(ray, { type: 'sight', mode: 'any' });
+      const losResult = isSightBlockedBetweenCenters(observerToken, targetToken);
 
       // Get distance
       const distance = visionAnalyzer.distanceFeet(observerToken, targetToken);
