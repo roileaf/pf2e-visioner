@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.15.7] - 2026-11-27
+
+### Fixed
+
+- **Knocked-out PCs no longer vanish for the rest of the party.** When a PC went unconscious, dying or dead, any Sneak, Hide or manual override involving them was meant to be cleared, but on PF2e that cleanup never ran. A PC who had been undetected stayed undetected and undrawn after being knocked out, and the Visioner Manager hides downed tokens, so it could not be fixed there. Overrides involving a token are now cleared when it is knocked out.
+- **`explainVisibility` API works on Foundry v14 again.** It used Foundry functions removed in v14 and threw an error.
+
 ## [8.15.6] - 2026-11-27
 
 ### Fixed
