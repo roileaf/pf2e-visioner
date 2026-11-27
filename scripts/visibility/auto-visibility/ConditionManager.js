@@ -8,6 +8,10 @@ import { VisionAnalyzer } from './VisionAnalyzer.js';
 import { ExclusionManager } from './core/ExclusionManager.js';
 import { updateCanvasPerception } from '../../helpers/perception-refresh.js';
 import { isCurrentSceneAvsWriter } from '../../services/gm-election.js';
+import {
+  forgetInvisiblePreviousStates,
+  getRememberedInvisiblePreviousState,
+} from './invisibility-previous-state.js';
 
 export class ConditionManager {
   /** @type {ConditionManager} */
@@ -356,6 +360,7 @@ export class ConditionManager {
         !!conditionItemId && existingFlags.conditionItemId === conditionItemId;
       const currentVisibility =
         (shouldPreservePreviousState ? existingFlags.previousState : null) ||
+        getRememberedInvisiblePreviousState(token.document.id, observerId) ||
         getObserverToTargetVisibility(otherToken, token) ||
         'observed';
 
@@ -552,6 +557,7 @@ export class ConditionManager {
    * @param {Token} token
    */
   async #clearInvisibilityFlags(token) {
+    forgetInvisiblePreviousStates(token.document.id);
     await token.document.unsetFlag('pf2e-visioner', 'invisibility');
   }
 

@@ -22,6 +22,10 @@ import { isDarknessSource } from '../utils/darkness-source.js';
 import { getLogger } from '../utils/logger.js';
 import { getCachedSettingValue } from '../utils/setting-value-cache.js';
 import { calculateVisibility } from './StatelessVisibilityCalculator.js';
+import {
+  forgetInvisiblePreviousStates,
+  resolveInvisiblePreviousState,
+} from './auto-visibility/invisibility-previous-state.js';
 
 const log = getLogger('AVS/VisibilityAdapter');
 
@@ -633,17 +637,9 @@ export async function calculateVisibilityFromTokens(observer, target, dependenci
   };
 
   if (input.target.auxiliary?.includes('invisible')) {
-    try {
-      const invisFlags = target?.document?.flags?.['pf2e-visioner']?.invisibility;
-      const fromFlags = invisFlags?.[observer?.document?.id]?.previousState;
-      if (fromFlags) {
-        input.previousState = fromFlags;
-      } else if (options?.visibilityMapCache) {
-        input.previousState = options.visibilityMapCache.getMap(observer)[target?.document?.id] || null;
-      }
-    } catch {
-      input.previousState = null;
-    }
+    input.previousState = resolveInvisiblePreviousState(observer, target, options?.visibilityMapCache);
+  } else {
+    forgetInvisiblePreviousStates(target?.document?.id);
   }
 
   // Calculate using stateless calculator
