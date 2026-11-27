@@ -97,6 +97,13 @@ export async function cleanupAvsOverridesForDefeatedActor(
   }
 }
 
+export async function handleDefeatConditionItemCreated(item, options = {}) {
+  if (item?.type !== 'condition') {
+    return { cleaned: false, reason: 'not-condition' };
+  }
+  return handleDefeatEffectCreated(item, options);
+}
+
 export async function handleDefeatEffectCreated(
   effect,
   {
