@@ -1,5 +1,11 @@
 # Changelog
 
+## [8.15.6] - 2026-11-27
+
+### Fixed
+
+- **Invisibility from an effect no longer jumps straight to Undetected.** When a creature turned invisible through an effect item (rather than the condition itself), observers who could see it went straight to Undetected instead of Hidden, and only a refresh corrected it. They now become Hidden as expected.
+
 ## [8.15.5] - 2026-11-20
 
 ### Fixed
